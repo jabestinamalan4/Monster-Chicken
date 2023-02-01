@@ -42,4 +42,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> fa4849b (Initial commit with passport integrated with MongoDB)
