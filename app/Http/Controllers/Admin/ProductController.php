@@ -59,7 +59,7 @@ class ProductController extends Controller
             }
         }
         else{
-            $product = new product;
+            $product = new Product;
             $product->rating = 5;
             $product->reviews = 0;
         }
