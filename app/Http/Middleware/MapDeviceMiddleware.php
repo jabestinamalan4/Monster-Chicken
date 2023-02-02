@@ -18,7 +18,12 @@ class MapDeviceMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $inputData = $request->input;
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
 
         if (Auth::guard('api')->check() == true) {
             $user = auth('api')->user();
