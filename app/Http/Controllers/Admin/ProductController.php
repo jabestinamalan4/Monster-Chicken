@@ -124,6 +124,7 @@ class ProductController extends Controller
 
         $category->status = isset($inputData->status) ? $inputData->status : 1;
         $category->category = $inputData->category;
+        $category->image_url = $inputData->imageUrl;
 
         $category->save();
 
