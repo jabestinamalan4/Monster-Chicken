@@ -65,7 +65,7 @@ class ProductController extends Controller
         }
 
         $product->status = isset($inputData->status) ? $inputData->status : 1;
-        $product->productName = $inputData->name;
+        $product->name = $inputData->productName;
         $product->category = $inputData->category;
         $product->description = $inputData->description;
         $product->price = $inputData->price;
