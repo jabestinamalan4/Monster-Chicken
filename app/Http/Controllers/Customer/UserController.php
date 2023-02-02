@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
@@ -40,7 +41,7 @@ class UserController extends Controller
             array_push($categoryArray,$categoryDetail);
         }
 
-        $products = Product::where('status',1)->orderBy('DESC','id')->paginate(12);
+        $products = Product::where('status',1)->orderBy('id','DESC')->paginate(12);
 
         $productArray = [];
 
@@ -69,7 +70,7 @@ class UserController extends Controller
                 array_push($imageArray,$imageUrl);
             }
 
-            $productDetail['reviews'] = $product->reviews;
+            $productDetail['imageUrl'] = $product->imageUrl;
 
             array_push($productArray,$productDetail);
         }

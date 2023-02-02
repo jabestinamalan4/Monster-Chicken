@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\General\FileController;
+use App\Http\Controllers\Customer\UserController;
 use App\Http\Controllers\General\EncryptController;
 
 /*
@@ -23,7 +25,7 @@ Route::get('unauthorized', [EncryptController::class,'unauthorized'])->name('una
 Route::post('decrypt', [EncryptController::class, 'decrypt'])->middleware(['decrypt']);
 Route::post('encrypt', [EncryptController::class, 'encrypt']);
 
-Route::post('file/upload', [DocumentUploadsController::class,'upload']);
+Route::post('file/upload', [FileController::class,'upload']);
 
 Route::group(['middleware'=>['decrypt']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
