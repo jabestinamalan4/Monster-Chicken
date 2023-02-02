@@ -40,7 +40,7 @@ class MapDeviceMiddleware
 
                     $user->device_id = $inputData->deviceId;
                 }
-                $user->device_key = $inputData->deviceKey;
+                $user->device_key = isset($inputData->deviceKey) ? $inputData->deviceKey : null;
 
                 $user->save();
             }
