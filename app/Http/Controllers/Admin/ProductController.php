@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -133,5 +134,66 @@ class ProductController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+    public function get_products(Request $request){
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+        $query = Product::query();
+
+        if (isset($inputData->productId) && $inputData->productId != null && $inputData->productId != "") {
+            $query = $query->where('id',$inputData->productId);
+        }
+
+        if (isset($inputData->maxPrice) && $inputData->maxPrice != null && $inputData->maxPrice != "") {
+            $query = $query->where('price',">=",$inputData->maxPrice);
+        }
+
+        if (isset($inputData->minPrice) && $inputData->minPrice != null && $inputData->minPrice != "") {
+            $query = $query->where('price',"<=",$inputData->minPrice);
+        }
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+           // $query = $query->whereRelation('name','description','LIKE', '%'.$inputData->search.'%');
+           $query = $query->where(function ($function) use($search) {
+                $function->where('name', 'like', '%' . $search . '%')
+                ->orWhere('description', 'like', '%' . $search . '%')
+                ->orWhere('price', 'like', '%' . $search . '%')
+                ->orWhere('discount_price', 'like', '%' . $search . '%')
+               ->orWhere('rating', 'like', '%' . $search . '%')
+               ->orWhere('reviews', 'like', '%' . $search . '%');
+          });
+        }
+
+        $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+        $totalArray = [];
+        foreach($produts as $produt){
+            $productsList = [];
+            $category = ProductCategory::where('id',$produt->category)->first();
+            $productsList['id']             = $produt->id;
+            $productsList['category']       = isset($category) && ($category!=null || $category!="" ) ? $category->category:"";
+            $productsList['name']           = $produt->name;
+            $productsList['imageUrl']       = Storage::disk('public')->url('document/'.implode(json_decode($produt->image_url)));;
+            $productsList['description']    = $produt->description;
+            $productsList['price']          = $produt->price;
+            $productsList['discountPrice']  = $produt->discount_price;
+            $productsList['rating']         = $produt->rating;
+            $productsList['reviews']        = $produt->reviews;
+            $productsList['status']         = $produt->status;
+            array_push($totalArray,$productsList);
+        }
+
+
+         $response['status'] = true;
+         $response["message"] = ['Retrieved Successfully.'];
+         $response['response']["product"] = $totalArray;
+
+         $encryptedResponse['data'] = $this->encryptData($response);
+         return response($encryptedResponse, 200);
+
     }
 }

@@ -27,4 +27,5 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('product/store', [ProductController::class, 'store']);
     Route::post('product/category-store', [ProductController::class, 'storeCategory']);
+    Route::post('product/list', [ProductController::class, 'get_products']);
 });
