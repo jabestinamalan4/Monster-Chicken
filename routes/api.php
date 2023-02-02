@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\General\EncryptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +17,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::get('unauthorized', [EncryptController::class,'unauthorized'])->name('unauthenticated');
+
+Route::group(['middleware'=>['decrypt']], function(){
+    Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 });
