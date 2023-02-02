@@ -20,7 +20,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('unauthorized', [EncryptController::class,'unauthorized'])->name('unauthenticated');
+Route::post('decrypt', [EncryptController::class, 'decrypt'])->middleware(['decrypt']);
+Route::post('encrypt', [EncryptController::class, 'encrypt']);
 
 Route::group(['middleware'=>['decrypt']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
+
+    Route::post('dashboard', [UserController::class,'dashboard']);
 });
