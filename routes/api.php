@@ -27,4 +27,5 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
     Route::post('dashboard', [UserController::class,'dashboard']);
+
 });
