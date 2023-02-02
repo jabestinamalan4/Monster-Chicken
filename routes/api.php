@@ -27,7 +27,7 @@ Route::post('encrypt', [EncryptController::class, 'encrypt']);
 
 Route::post('file/upload', [FileController::class,'upload']);
 
-Route::group(['middleware'=>['decrypt']], function(){
+Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
     Route::post('dashboard', [UserController::class,'dashboard']);
