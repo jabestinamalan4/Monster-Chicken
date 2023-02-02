@@ -23,6 +23,8 @@ Route::get('unauthorized', [EncryptController::class,'unauthorized'])->name('una
 Route::post('decrypt', [EncryptController::class, 'decrypt'])->middleware(['decrypt']);
 Route::post('encrypt', [EncryptController::class, 'encrypt']);
 
+Route::post('file/upload', [DocumentUploadsController::class,'upload']);
+
 Route::group(['middleware'=>['decrypt']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
