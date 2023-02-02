@@ -31,6 +31,11 @@ class UserController extends Controller
 
             $categoryDetail['categoryId'] = $this->encryptId($category->id);
             $categoryDetail['categoryName'] = $category->category;
+            $categoryDetail['imageUrl'] = Storage::disk('public')->url('document/'.$category->image_url);
+
+            $productCount = Product::where('status',1)->where('category',$category->id)->count();
+            $categoryDetail['productCount'] = $productCount;
+
             if (isset($inputData->categoryId) && $inputData->categoryId == $category->id) {
                 $categoryDetail['selected'] = true;
             }
