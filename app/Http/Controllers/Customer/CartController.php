@@ -111,6 +111,8 @@ class CartController extends Controller
             $cartDetail['cartId'] = $this->encryptId($cart->id);
             $cartDetail['productId'] = $this->encryptId($cart->product->id);
             $cartDetail['productName'] = $cart->product->name;
+            $cartDetail['stock'] = 20;
+            $cartDetail['maxQuantity'] = 10;
 
             $isCategoryExist = ProductCategory::where('status',1)->where('id',$cart->product->category)->first();
             if (isset($isCategoryExist->id)) {

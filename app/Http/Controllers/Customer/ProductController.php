@@ -71,6 +71,8 @@ class ProductController extends Controller
 
             $productDetail['productId'] = $this->encryptId($product->id);
             $productDetail['productName'] = $product->name;
+            $productDetail['stock'] = 20;
+            $productDetail['maxQuantity'] = 10;
 
             $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
             if (isset($category->category)) {
@@ -154,6 +156,8 @@ class ProductController extends Controller
 
         $productDetail['productId'] = $this->encryptId($product->id);
         $productDetail['productName'] = $product->name;
+        $productDetail['stock'] = 20;
+        $productDetail['maxQuantity'] = 10;
 
         $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
         if (isset($category->category)) {
@@ -300,8 +304,10 @@ class ProductController extends Controller
             $listDetail['listId'] = $this->encryptId($list->id);
             $listDetail['productId'] = $this->encryptId($list->product->id);
             $listDetail['productName'] = $list->product->name;
+            $listDetail['stock'] = 20;
+            $listDetail['maxQuantity'] = 10;
 
-            $isCategoryExist = ProductCategory::where('status',1)->where('id',$cart->product->category)->first();
+            $isCategoryExist = ProductCategory::where('status',1)->where('id',$list->product->category)->first();
             if (isset($isCategoryExist->id)) {
                 $listDetail['productCategory'] = $isCategoryExist->category;
             }
@@ -311,7 +317,7 @@ class ProductController extends Controller
 
             $imageArray = [];
 
-            foreach(json_decode($cart->product->image_url) as $image){
+            foreach(json_decode($list->product->image_url) as $image){
                 $imageUrl = Storage::disk('public')->url('document/'.$image);
 
                 array_push($imageArray,$imageUrl);
@@ -319,10 +325,10 @@ class ProductController extends Controller
 
             $listDetail['imageUrl'] = $imageArray;
 
-            $listDetail['quantity'] = $cart->quantity;
-            $listDetail['price'] = $cart->product->price;
-            $listDetail['rating'] = $cart->product->rating;
-            $listDetail['reviews'] = $cart->product->reviews;
+            $listDetail['quantity'] = $list->quantity;
+            $listDetail['price'] = $list->product->price;
+            $listDetail['rating'] = $list->product->rating;
+            $listDetail['reviews'] = $list->product->reviews;
 
             array_push($listArray,$listDetail);
         }
