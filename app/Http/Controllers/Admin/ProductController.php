@@ -136,7 +136,8 @@ class ProductController extends Controller
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
     }
-    public function get_products(Request $request){
+
+    public function productList(Request $request){
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
