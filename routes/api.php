@@ -32,6 +32,15 @@ Route::post('file/upload', [FileController::class,'upload']);
 Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
+    Route::post('profile', [UserController::class,'profile']);
     Route::post('dashboard', [UserController::class,'dashboard']);
 
+    Route::post('product/list', [ProductController::class,'productList']);
+    Route::get('product/category/list', [ProductController::class,'categoryList']);
+    Route::post('product/view', [ProductController::class,'productDetails']);
+    Route::post('product/wishlist/add', [ProductController::class,'wishlistStore']);
+    Route::post('product/wishlist/list', [ProductController::class,'wishlist']);
+
+    Route::post('cart/store', [CartController::class,'cartStore']);
+    Route::post('cart/list', [CartController::class,'cartList']);
 });

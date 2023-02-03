@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Models\Cart;
 use App\Models\Product;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
@@ -21,6 +23,8 @@ class UserController extends Controller
         else{
             $inputData = $request->input;
         }
+
+        $inputUser = $request->user;
 
         $categories = ProductCategory::where('status',1)->get();
 
@@ -55,6 +59,8 @@ class UserController extends Controller
 
             $productDetail['productId'] = $this->encryptId($product->id);
             $productDetail['productName'] = $product->name;
+            $productDetail['stock'] = 20;
+            $productDetail['maxQuantity'] = 10;
 
             $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
             if (isset($category->category)) {
@@ -83,13 +89,62 @@ class UserController extends Controller
             array_push($productArray,$productDetail);
         }
 
+        if (isset($inputUser->id)) {
+            $cartCount = Cart::where('status',1)->where('user_id',$inputUser->id)->count();
+            $wishlistCount = Wishlist::where('status',1)->where('user_id',$inputUser->id)->count();
+        }
+        else{
+            $cartCount = 0;
+            $wishlistCount = 0;
+        }
+
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Retrieved successfully.'];
         $response['response']['categories'] = $categoryArray;
         $response['response']['products'] = $productArray;
+        $response['response']['cartCount'] = $cartCount;
+        $response['response']['wishlistCount'] = $wishlistCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+
+    public function profile(Request $request)
+    {
+        $inputUser = $request->user;
+
+        if (isset($inputUser->id)) {
+            $userDetail = [];
+
+            $userDetail['name'] = isset($inputUser->name) ? $inputUser->name : "";
+            $userDetail['email'] = isset($inputUser->email) ? $inputUser->email : "";
+            $userDetail['number'] = isset($inputUser->number) ? $inputUser->number : "";
+
+            if (isset($inputUser->id)) {
+                $cartCount = Cart::where('status',1)->where('user_id',$inputUser->id)->count();
+                $wishlistCount = Wishlist::where('status',1)->where('user_id',$inputUser->id)->count();
+            }
+            else{
+                $cartCount = 0;
+                $wishlistCount = 0;
+            }
+
+            $response['status'] = true;
+            $response['responseCode'] = 200;
+            $response["message"] = ['Retrieved successfully.'];
+            $response['response']['userDetail'] = $userDetail;
+            $response['response']['cartCount'] = $cartCount;
+            $response['response']['wishlistCount'] = $wishlistCount;
+
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 200);
+
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid User Details.']];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
     }
 }

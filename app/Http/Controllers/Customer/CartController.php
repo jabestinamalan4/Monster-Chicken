@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
@@ -73,6 +74,10 @@ class CartController extends Controller
         $cart->product_id = $productId;
         $cart->quantity = isset($inputData->quantity) ? $inputData->quantity : 1;
 
+        if (isset($inputData->status) && $inputData->status == "remove") {
+            $cart->status = 0;
+        }
+
         $cart->save();
 
         $response['status'] = true;
@@ -95,9 +100,10 @@ class CartController extends Controller
         $inputUser = $request->user;
 
         $totalCount = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->count();
-        $carts = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+        $carts = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->orderBy('id','DESC')->get();
 
         $cartArray = [];
+        $totalCartPrice = 0;
 
         foreach($carts as $cart){
             $cartDetail = [];
@@ -105,6 +111,8 @@ class CartController extends Controller
             $cartDetail['cartId'] = $this->encryptId($cart->id);
             $cartDetail['productId'] = $this->encryptId($cart->product->id);
             $cartDetail['productName'] = $cart->product->name;
+            $cartDetail['stock'] = 20;
+            $cartDetail['maxQuantity'] = 10;
 
             $isCategoryExist = ProductCategory::where('status',1)->where('id',$cart->product->category)->first();
             if (isset($isCategoryExist->id)) {
@@ -114,9 +122,22 @@ class CartController extends Controller
                 $cartDetail['productCategory'] = "";
             }
 
+            $imageArray = [];
+
+            foreach(json_decode($cart->product->image_url) as $image){
+                $imageUrl = Storage::disk('public')->url('document/'.$image);
+
+                array_push($imageArray,$imageUrl);
+            }
+
+            $cartDetail['imageUrl'] = $imageArray;
+
             $cartDetail['quantity'] = $cart->quantity;
             $cartDetail['price'] = $cart->product->price;
+            $cartDetail['rating'] = $cart->product->rating;
+            $cartDetail['reviews'] = $cart->product->reviews;
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
+            $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
 
             array_push($cartArray,$cartDetail);
         }
@@ -124,8 +145,11 @@ class CartController extends Controller
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
-        $response["cart"] = $cartArray;
-        $response["totalCount"] = $totalCount;
+        $response['response']["cart"] = $cartArray;
+        $response['response']["deliveryCharge"] = 15;
+        $response['response']["totalCartPrice"] = $totalCartPrice;
+        $response['response']["grandTotal"] = $totalCartPrice + 15;
+        $response['response']["totalCount"] = $totalCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
