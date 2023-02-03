@@ -119,8 +119,20 @@ class CartController extends Controller
                 $cartDetail['productCategory'] = "";
             }
 
+            $imageArray = [];
+
+            foreach(json_decode($cart->product->image_url) as $image){
+                $imageUrl = Storage::disk('public')->url('document/'.$image);
+
+                array_push($imageArray,$imageUrl);
+            }
+
+            $cartDetail['imageUrl'] = $imageArray;
+
             $cartDetail['quantity'] = $cart->quantity;
             $cartDetail['price'] = $cart->product->price;
+            $cartDetail['rating'] = $cart->product->rating;
+            $cartDetail['reviews'] = $cart->product->reviews;
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
             $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
 
