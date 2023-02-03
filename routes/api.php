@@ -6,6 +6,7 @@ use App\Http\Controllers\General\FileController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\UserController;
 use App\Http\Controllers\General\EncryptController;
+use App\Http\Controllers\Customer\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,5 +33,9 @@ Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
     Route::post('dashboard', [UserController::class,'dashboard']);
+
+    Route::post('product/list', [ProductController::class,'productList']);
+    Route::post('product/view', [ProductController::class,'productDetails']);
+
     Route::post('cart/store', [CartController::class,'cartStore']);
 });
