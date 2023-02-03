@@ -59,7 +59,7 @@ class ProductController extends Controller
         }
 
         $totalCount = $products->count();
-        $products = $products->orderBy('id','DESC')->paginate(12);
+        $products = $products->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
         $productArray = [];
 
@@ -159,8 +159,10 @@ class ProductController extends Controller
             $cartExist = Cart::where('status',1)->where('product_id',$product->id)->where('user_id',$inputUser->id)->first();
 
             if (isset($cartExist->id)) {
-                $productDetail['cartId'] = $cartExist->id;
                 $productDetail['cartQuantity'] = $cartExist->quantity;
+            }
+            else{
+                $productDetail['cartQuantity'] = 0;
             }
         }
 

@@ -46,7 +46,7 @@ class UserController extends Controller
             array_push($categoryArray,$categoryDetail);
         }
 
-        $products = Product::where('status',1)->orderBy('id','DESC')->paginate(12);
+        $products = Product::where('status',1)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
         $productArray = [];
 
