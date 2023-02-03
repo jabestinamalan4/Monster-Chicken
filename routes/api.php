@@ -36,7 +36,8 @@ Route::group(['middleware'=>['decrypt','deviceMap']], function(){
 
     Route::post('product/list', [ProductController::class,'productList']);
     Route::post('product/view', [ProductController::class,'productDetails']);
-    Route::post('product/add/wishlist', [ProductController::class,'wishlistStore']);
+    Route::post('product/wishlist/add', [ProductController::class,'wishlistStore']);
+    Route::post('product/wishlist/list', [ProductController::class,'wishlist']);
 
     Route::post('cart/store', [CartController::class,'cartStore']);
     Route::post('cart/list', [CartController::class,'cartList']);
