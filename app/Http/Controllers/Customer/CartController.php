@@ -73,6 +73,10 @@ class CartController extends Controller
         $cart->product_id = $productId;
         $cart->quantity = isset($inputData->quantity) ? $inputData->quantity : 1;
 
+        if (isset($inputData->status) && $inputData->status == "remove") {
+            $cart->status = 0;
+        }
+
         $cart->save();
 
         $response['status'] = true;
