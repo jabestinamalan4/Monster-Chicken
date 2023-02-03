@@ -9,6 +9,7 @@ use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
