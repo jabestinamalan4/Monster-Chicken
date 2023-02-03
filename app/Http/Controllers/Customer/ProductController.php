@@ -321,4 +321,39 @@ class ProductController extends Controller
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
     }
+
+    public function categoryList(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $categories = ProductCategory::where('status',1)->get();
+
+        $categoryArray = [];
+
+        foreach($categories as $category){
+            $categoryDetail = [];
+
+            $categoryDetail['categoryId'] = $this->encryptId($category->id);
+            $categoryDetail['categoryName'] = $category->category;
+            $categoryDetail['imageUrl'] = Storage::disk('public')->url('document/'.$category->image_url);
+
+            $productCount = Product::where('status',1)->where('category',$category->id)->count();
+            $categoryDetail['productCount'] = $productCount;
+
+            array_push($categoryArray,$categoryDetail);
+        }
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Saved successfully.'];
+        $response["categories"] = $categoryArray;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
 }
