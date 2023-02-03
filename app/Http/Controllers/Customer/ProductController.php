@@ -25,6 +25,8 @@ class ProductController extends Controller
             $inputData = $request->input;
         }
 
+        $inputUser = $request->user;
+
         $categories = ProductCategory::where('status',1)->get();
 
         $categoryArray = [];
