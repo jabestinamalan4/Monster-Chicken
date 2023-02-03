@@ -301,7 +301,7 @@ class ProductController extends Controller
             $listDetail['productId'] = $this->encryptId($list->product->id);
             $listDetail['productName'] = $list->product->name;
 
-            $isCategoryExist = ProductCategory::where('status',1)->where('id',$list->product->category)->first();
+            $isCategoryExist = ProductCategory::where('status',1)->where('id',$cart->product->category)->first();
             if (isset($isCategoryExist->id)) {
                 $listDetail['productCategory'] = $isCategoryExist->category;
             }
@@ -309,7 +309,20 @@ class ProductController extends Controller
                 $listDetail['productCategory'] = "";
             }
 
-            $listDetail['price'] = $list->product->price;
+            $imageArray = [];
+
+            foreach(json_decode($cart->product->image_url) as $image){
+                $imageUrl = Storage::disk('public')->url('document/'.$image);
+
+                array_push($imageArray,$imageUrl);
+            }
+
+            $listDetail['imageUrl'] = $imageArray;
+
+            $listDetail['quantity'] = $cart->quantity;
+            $listDetail['price'] = $cart->product->price;
+            $listDetail['rating'] = $cart->product->rating;
+            $listDetail['reviews'] = $cart->product->reviews;
 
             array_push($listArray,$listDetail);
         }
@@ -317,8 +330,8 @@ class ProductController extends Controller
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
-        $response["list"] = $listArray;
-        $response["totalCount"] = $totalCount;
+        $response['response']["list"] = $listArray;
+        $response['response']["totalCount"] = $totalCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
