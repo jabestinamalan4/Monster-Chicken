@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -134,5 +135,140 @@ class ProductController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+    public function get_products(Request $request){
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+        $query = Product::query();
+
+        $categoryArray = [];
+
+        foreach($categories as $category){
+            $categoryDetail = [];
+
+            $categoryDetail['categoryId'] = $this->encryptId($category->id);
+            $categoryDetail['categoryName'] = $category->category;
+            $categoryDetail['imageUrl'] = Storage::disk('public')->url('document/'.$category->image_url);
+
+            $productCount = Product::where('status',1)->where('category',$category->id)->count();
+            $categoryDetail['productCount'] = $productCount;
+
+            if (isset($inputData->category) && $inputData->category == $category->id) {
+                $categoryDetail['selected'] = true;
+            }
+            else{
+                $categoryDetail['selected'] = false;
+            }
+
+            array_push($categoryArray,$categoryDetail);
+        }
+        if (isset($inputData->productId) && $inputData->productId != null && $inputData->productId != "") {
+            $query = $query->where('id',$inputData->productId);
+        }
+        if (isset($inputData->category) && $inputData->category != null && $inputData->category != "") {
+            $query = $query->where('category',$inputData->category);
+        }
+
+        if (isset($inputData->maxPrice) && $inputData->maxPrice != null && $inputData->maxPrice != "") {
+            $query = $query->where('price',">=",$inputData->maxPrice);
+        }
+
+        if (isset($inputData->minPrice) && $inputData->minPrice != null && $inputData->minPrice != "") {
+            $query = $query->where('price',"<=",$inputData->minPrice);
+        }
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+           $query = $query->where(function ($function) use($search) {
+                $function->where('name', 'like', '%' . $search . '%')
+                ->orWhere('description', 'like', '%' . $search . '%')
+                ->orWhere('price', 'like', '%' . $search . '%')
+                ->orWhere('discount_price', 'like', '%' . $search . '%')
+               ->orWhere('rating', 'like', '%' . $search . '%')
+               ->orWhere('reviews', 'like', '%' . $search . '%');
+          });
+        }
+        $productCount = $query->count();
+        $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+        $totalArray = [];
+        foreach($produts as $produt){
+            $productsList = [];
+            $category = ProductCategory::where('id',$produt->category)->first();
+            $productsList['id']             = $produt->id;
+            $productsList['category']       = isset($category) && ($category!=null || $category!="" ) ? $category->category:"";
+            $productsList['name']           = $produt->name;
+            $productsList['imageUrl']       = Storage::disk('public')->url('document/'.implode(json_decode($produt->image_url)));
+            $productsList['description']    = $produt->description;
+            $productsList['price']          = $produt->price;
+            $productsList['discountPrice']  = $produt->discount_price;
+            $productsList['rating']         = $produt->rating;
+            $productsList['reviews']        = $produt->reviews;
+            $productsList['status']         = $produt->status;
+            array_push($totalArray,$productsList);
+        }
+
+
+         $response['status'] = true;
+         $response["message"] = ['Retrieved Successfully.'];
+         $response['response']["categories"] = $categoryArray;
+         $response['response']["products"] = $totalArray;
+         $response['response']["totalProduct"] = $productCount;
+
+         $encryptedResponse['data'] = $this->encryptData($response);
+         return response($encryptedResponse, 200);
+
+    }
+    public function categoryList(Request $request){
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $query = ProductCategory::query();
+
+        if (isset($inputData->categoryId) && $inputData->categoryId != null && $inputData->categoryId != "") {
+            $query = $query->where('id',$inputData->categoryId);
+        }
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+           $query = $query->where(function ($function) use($search) {
+                $function->where('category', 'like', '%' . $search . '%');
+          });
+        }
+
+        $categoryList = [];
+
+        $categoryCount = $query->count();
+
+        $categories = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+
+        foreach($categories as $category){
+            $categoryDetail = [];
+
+            $categoryDetail['categoryId'] = $this->encryptId($category->id);
+            $categoryDetail['categoryName'] = $category->category;
+            $categoryDetail['imageUrl'] = Storage::disk('public')->url('document/'.$category->image_url);
+
+            $productCount = Product::where('status',1)->where('category',$category->id)->count();
+            $categoryDetail['productCount'] = $productCount;
+
+            array_push($categoryList,$categoryDetail);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["categories"] = $categoryList;
+        $response['response']["totalProduct"] = $categoryCount;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+
     }
 }
