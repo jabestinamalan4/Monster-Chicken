@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
@@ -112,6 +113,8 @@ class ProductController extends Controller
             $inputData = $request->input;
         }
 
+        $inputUser = $request->user;
+
         $rulesArray = [
                         'productId' => 'required'
                     ];
@@ -150,6 +153,15 @@ class ProductController extends Controller
         $productDetail['description'] = $product->description;
         $productDetail['rating'] = $product->rating;
         $productDetail['reviews'] = $product->reviews;
+
+        if (isset($inputUser->id)) {
+            $cartExist = Cart::where('status',1)->where('product_id',$product->id)->where('user_id',$inputUser->id)->first();
+
+            if (isset($cartExist->id)) {
+                $productDetail['cartId'] = $cartExist->id;
+                $productDetail['cartQuantity'] = $cartExist->quantity;
+            }
+        }
 
         $imageArray = [];
 
