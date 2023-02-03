@@ -60,7 +60,7 @@ class ProductController extends Controller
             }
         }
         else{
-            $product = new product;
+            $product = new Product;
             $product->rating = 5;
             $product->reviews = 0;
         }
@@ -97,7 +97,7 @@ class ProductController extends Controller
                     ];
 
         if (isset($inputData->categoryId) && $inputData->categoryId != null && $inputData->categoryId != "") {
-            $rulesArray['category'] = "required|unique:product_categories,category".$inputData->categoryId;
+            $rulesArray['category'] = "required|unique:product_categories,category,".$inputData->categoryId;
         }
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);

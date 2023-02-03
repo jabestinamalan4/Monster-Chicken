@@ -3,8 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\General\FileController;
+use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\UserController;
 use App\Http\Controllers\General\EncryptController;
+use App\Http\Controllers\Customer\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +29,7 @@ Route::post('encrypt', [EncryptController::class, 'encrypt']);
 
 Route::post('file/upload', [FileController::class,'upload']);
 
-Route::group(['middleware'=>['decrypt']], function(){
+Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
     Route::post('dashboard', [UserController::class,'dashboard']);

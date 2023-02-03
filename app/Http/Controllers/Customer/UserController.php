@@ -59,6 +59,7 @@ class UserController extends Controller
             $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
             if (isset($category->category)) {
                 $productDetail['categoryName'] = $category->category;
+                $productDetail['categoryId'] = $category->id;
             }
 
             $productDetail['price'] = $product->price;
@@ -77,7 +78,7 @@ class UserController extends Controller
                 array_push($imageArray,$imageUrl);
             }
 
-            $productDetail['imageUrl'] = $product->imageArray;
+            $productDetail['imageUrl'] = $imageArray;
 
             array_push($productArray,$productDetail);
         }
