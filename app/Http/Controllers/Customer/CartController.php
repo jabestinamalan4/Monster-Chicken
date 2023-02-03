@@ -97,6 +97,8 @@ class CartController extends Controller
         $totalCount = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->count();
         $carts = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
+        $cartArray = [];
+
         foreach($carts as $cart){
             $cartDetail = [];
 
@@ -115,6 +117,8 @@ class CartController extends Controller
             $cartDetail['quantity'] = $cart->quantity;
             $cartDetail['price'] = $cart->product->price;
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
+
+            array_push($cartArray,$cartDetail);
         }
 
         $response['status'] = true;
