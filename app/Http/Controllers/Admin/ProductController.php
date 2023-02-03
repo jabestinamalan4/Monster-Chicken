@@ -147,6 +147,8 @@ class ProductController extends Controller
 
         $categoryArray = [];
 
+        $categories = ProductCategory::where('status',1)->get();
+
         foreach($categories as $category){
             $categoryDetail = [];
 
