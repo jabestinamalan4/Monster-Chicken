@@ -99,9 +99,10 @@ class CartController extends Controller
         $inputUser = $request->user;
 
         $totalCount = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->count();
-        $carts = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+        $carts = Cart::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->orderBy('id','DESC')->get();
 
         $cartArray = [];
+        $totalCartPrice = 0;
 
         foreach($carts as $cart){
             $cartDetail = [];
@@ -121,6 +122,7 @@ class CartController extends Controller
             $cartDetail['quantity'] = $cart->quantity;
             $cartDetail['price'] = $cart->product->price;
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
+            $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
 
             array_push($cartArray,$cartDetail);
         }
@@ -129,6 +131,9 @@ class CartController extends Controller
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
         $response['response']["cart"] = $cartArray;
+        $response['response']["deliveryCharge"] = 15;
+        $response['response']["totalCartPrice"] = $totalCartPrice;
+        $response['response']["grandTotal"] = $totalCartPrice + 15;
         $response['response']["totalCount"] = $totalCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
