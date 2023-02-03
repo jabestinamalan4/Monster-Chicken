@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Models\Cart;
 use App\Models\Product;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
@@ -21,6 +23,8 @@ class UserController extends Controller
         else{
             $inputData = $request->input;
         }
+
+        $inputUser = $request->user;
 
         $categories = ProductCategory::where('status',1)->get();
 
@@ -46,7 +50,7 @@ class UserController extends Controller
             array_push($categoryArray,$categoryDetail);
         }
 
-        $products = Product::where('status',1)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+        $wishlistCount = Product::where('status',1)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
         $productArray = [];
 
@@ -81,11 +85,22 @@ class UserController extends Controller
             array_push($productArray,$productDetail);
         }
 
+        if (isset($inputUser->id)) {
+            $cartCount = Cart::where('status',1)->where('user_id',$inputUser->id)->count();
+            $wishlistCount = Wishlist::where('status',1)->where('user_id',$inputUser->id)->count();
+        }
+        else{
+            $cartCount = 0;
+            $wishlistCount = 0;
+        }
+
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Retrieved successfully.'];
         $response['response']['categories'] = $categoryArray;
         $response['response']['products'] = $productArray;
+        $response['response']['cartCount'] = $cartCount;
+        $response['response']['wishlistCount'] = $wishlistCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
