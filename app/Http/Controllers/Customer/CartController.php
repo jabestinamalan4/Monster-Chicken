@@ -128,8 +128,8 @@ class CartController extends Controller
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
-        $response["cart"] = $cartArray;
-        $response["totalCount"] = $totalCount;
+        $response['response']["cart"] = $cartArray;
+        $response['response']["totalCount"] = $totalCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
