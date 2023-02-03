@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
