@@ -82,7 +82,7 @@ class ProductController extends Controller
             $productDetail['rating'] = $product->rating;
             $productDetail['reviews'] = $product->reviews;
 
-            $wishlistExist = Wishlist::where('product_id',$productId)->where('user_id',$inputUser->id)->where('status',1)->first();
+            $wishlistExist = Wishlist::where('product_id',$product->id)->where('user_id',$inputUser->id)->where('status',1)->first();
 
             if (isset($wishlistExist->id)) {
                 $productDetail['wishlist'] = true;
