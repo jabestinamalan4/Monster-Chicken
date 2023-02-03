@@ -82,6 +82,15 @@ class ProductController extends Controller
             $productDetail['rating'] = $product->rating;
             $productDetail['reviews'] = $product->reviews;
 
+            $wishlistExist = Wishlist::where('product_id',$productId)->where('user_id',$inputUser->id)->where('status',1)->first();
+
+            if (isset($wishlistExist->id)) {
+                $productDetail['wishlist'] = true;
+            }
+            else{
+                $productDetail['wishlist'] = false;
+            }
+
             $imageArray = [];
 
             foreach(json_decode($product->image_url) as $image){
@@ -165,6 +174,15 @@ class ProductController extends Controller
             else{
                 $productDetail['cartQuantity'] = 0;
             }
+        }
+
+        $wishlistExist = Wishlist::where('product_id',$productId)->where('user_id',$inputUser->id)->where('status',1)->first();
+
+        if (isset($wishlistExist->id)) {
+            $productDetail['wishlist'] = true;
+        }
+        else{
+            $productDetail['wishlist'] = false;
         }
 
         $imageArray = [];
@@ -253,6 +271,54 @@ class ProductController extends Controller
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function wishlist(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $inputUser = $request->user;
+
+        $totalCount = Wishlist::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->count();
+        $wishlists = Wishlist::with('product')->whereRelation('product', 'status', 1)->where('status',1)->where('user_id',$inputUser->id)->orderBy('id','DESC')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+
+        $listArray = [];
+
+        foreach($wishlists as $list){
+            $listDetail = [];
+
+            $listDetail['listId'] = $this->encryptId($list->id);
+            $listDetail['productId'] = $this->encryptId($list->product->id);
+            $listDetail['productName'] = $list->product->name;
+
+            $isCategoryExist = ProductCategory::where('status',1)->where('id',$list->product->category)->first();
+            if (isset($isCategoryExist->id)) {
+                $listDetail['productCategory'] = $isCategoryExist->category;
+            }
+            else{
+                $listDetail['productCategory'] = "";
+            }
+
+            $listDetail['quantity'] = $list->quantity;
+            $listDetail['price'] = $list->product->price;
+            $listDetail['totalPrice'] = (int) $list->product->price * (int) $list->quantity;
+
+            array_push($listArray,$listDetail);
+        }
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Saved successfully.'];
+        $response["list"] = $listArray;
+        $response["totalCount"] = $totalCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
