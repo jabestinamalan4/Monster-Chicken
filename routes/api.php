@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\General\FileController;
+use App\Http\Controllers\Customer\AuthController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\UserController;
 use App\Http\Controllers\General\EncryptController;
@@ -33,6 +34,7 @@ Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
     Route::post('register', [AuthController::class,'register']);
+    Route::post('login', [AuthController::class,'login']);
 
     Route::post('profile', [UserController::class,'profile']);
     Route::post('dashboard', [UserController::class,'dashboard']);
