@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
@@ -38,7 +39,7 @@ class ProductController extends Controller
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;
 
-            if (isset($inputData->categoryId) && $inputData->categoryId == $category->id) {
+            if (isset($inputData->category) && $inputData->category == $category->id) {
                 $categoryDetail['selected'] = true;
             }
             else{
@@ -180,6 +181,78 @@ class ProductController extends Controller
         $response['responseCode'] = 200;
         $response["message"] = ['Retrieved successfully.'];
         $response['response']['productDetail'] = $productDetail;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function wishlistStore(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $inputUser = $request->user;
+
+        $rulesArray = [
+                        'productId' => 'required'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $productId = $this->decryptId($inputData->productId);
+
+        $productExist = Product::where('id',$productId)->where('status',1)->first();
+
+        if(!isset($productExist->id)){
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $wishlistExist = Wishlist::where('product_id',$productId)->where('user_id',$inputUser->id)->first();
+
+        if (isset($inputData->wishlistId)) {
+            $isExist = Wishlist::find($this->decryptId($inputData->wishlistId));
+            if (isset($isExist->id)) {
+                $wishlist = $isExist;
+            }
+            else{
+                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 400];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
+        elseif(isset($wishlistExist->id)){
+            $wishlist = $wishlistExist;
+        }
+        else{
+            $wishlist = new Wishlist;
+            $wishlist->user_id = $inputUser->id;
+            $wishlist->product_id = $productId;
+        }
+
+        if (isset($wishlist->status) && $wishlist->status == 1) {
+            $wishlist->status = 0;
+        }
+        else{
+            $wishlist->status = 1;
+        }
+
+        $wishlist->save();
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Saved successfully.'];
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
