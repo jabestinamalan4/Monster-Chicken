@@ -41,7 +41,7 @@ class ProductController extends Controller
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;
 
-            if (isset($inputData->category) && $inputData->category == $category->id) {
+            if (isset($inputData->category) && $this->decryptId($inputData->category) == $category->id) {
                 $categoryDetail['selected'] = true;
             }
             else{
@@ -54,7 +54,7 @@ class ProductController extends Controller
         $products = Product::where('status',1);
 
         if (isset($inputData->category) && $inputData->category != null && $inputData->category != "") {
-            $products = $products->where('category',$inputData->category);
+            $products = $products->where('category',$this->decryptId($inputData->category));
         }
 
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
