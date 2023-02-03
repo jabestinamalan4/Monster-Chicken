@@ -307,9 +307,7 @@ class ProductController extends Controller
                 $listDetail['productCategory'] = "";
             }
 
-            $listDetail['quantity'] = $list->quantity;
             $listDetail['price'] = $list->product->price;
-            $listDetail['totalPrice'] = (int) $list->product->price * (int) $list->quantity;
 
             array_push($listArray,$listDetail);
         }
