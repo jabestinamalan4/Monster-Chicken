@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Product;
+use App\Models\Cart;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
@@ -169,8 +170,8 @@ class ProductController extends Controller
 
             array_push($categoryArray,$categoryDetail);
         }
-        if (isset($inputData->productId) && $inputData->productId != null && $inputData->productId != "") {
-            $query = $query->where('id',$inputData->productId);
+        if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
+            $query = $query->where('status',$inputData->status);
         }
         if (isset($inputData->category) && $inputData->category != null && $inputData->category != "") {
             $query = $query->where('category',$inputData->category);
@@ -186,31 +187,26 @@ class ProductController extends Controller
 
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
             $search = $inputData->search;
-           $query = $query->where(function ($function) use($search) {
-                $function->where('name', 'like', '%' . $search . '%')
-                ->orWhere('description', 'like', '%' . $search . '%')
-                ->orWhere('price', 'like', '%' . $search . '%')
-                ->orWhere('discount_price', 'like', '%' . $search . '%')
-               ->orWhere('rating', 'like', '%' . $search . '%')
-               ->orWhere('reviews', 'like', '%' . $search . '%');
+            $query = $query->where(function ($function) use($search) {
+                $function->where('name', 'like', '%' . $search . '%');
           });
         }
         $productCount = $query->count();
         $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
         $totalArray = [];
-        foreach($produts as $produt){
+        foreach($produts as $product){
             $productsList = [];
-            $category = ProductCategory::where('id',$produt->category)->first();
-            $productsList['id']             = $produt->id;
+            $category = ProductCategory::where('id',$product->category)->first();
+            $productsList['id']             = $this->encryptId($product->id);
             $productsList['category']       = isset($category) && ($category!=null || $category!="" ) ? $category->category:"";
-            $productsList['name']           = $produt->name;
-            $productsList['imageUrl']       = Storage::disk('public')->url('document/'.implode(json_decode($produt->image_url)));
-            $productsList['description']    = $produt->description;
-            $productsList['price']          = $produt->price;
-            $productsList['discountPrice']  = $produt->discount_price;
-            $productsList['rating']         = $produt->rating;
-            $productsList['reviews']        = $produt->reviews;
-            $productsList['status']         = $produt->status;
+            $productsList['name']           = $product->name;
+            $productsList['imageUrl']       = Storage::disk('public')->url('document/'.implode(json_decode($product->image_url)));
+            $productsList['description']    = $product->description;
+            $productsList['price']          = $product->price;
+            $productsList['discountPrice']  = $product->discount_price;
+            $productsList['rating']         = $product->rating;
+            $productsList['reviews']        = $product->reviews;
+            $productsList['status']         = $product->status;
             array_push($totalArray,$productsList);
         }
 
@@ -235,8 +231,8 @@ class ProductController extends Controller
 
         $query = ProductCategory::query();
 
-        if (isset($inputData->categoryId) && $inputData->categoryId != null && $inputData->categoryId != "") {
-            $query = $query->where('id',$inputData->categoryId);
+        if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
+            $query = $query->where('status',$inputData->status);
         }
 
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
@@ -274,7 +270,8 @@ class ProductController extends Controller
         return response($encryptedResponse, 200);
 
     }
-    public function changeStatus(Request $request){
+
+    public function changeCategoryStatus(Request $request){
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
@@ -282,7 +279,7 @@ class ProductController extends Controller
             $inputData = $request->input;
         }
 
-        $rulesArray = ['productCategoryId' => 'required'];
+        $rulesArray = ['categoryId' => 'required'];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
@@ -292,20 +289,21 @@ class ProductController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $productCategory = ProductCategory::where('id',$inputData->productCategoryId)->first();
+        $productCategory = ProductCategory::where('id',$inputData->categoryId)->first();
 
         if(isset($productCategory) && $productCategory->status==1){
-                $changeStatus = 0;
+            $productCategory->status = 0;
         }else{
-                $changeStatus = 1;
+            $productCategory->status = 1;
         }
-
-        $productCategory->status = $changeStatus;
         $productCategory->save();
 
-        if(isset($productCategory) && ($productCategory!="" || $productCategory!=null)){
-
-            $product = Product::where('category',$inputData->productCategoryId)->update(['status'=>$changeStatus]);
+        if(isset($productCategory->id)){
+            $product = Product::where('category',$productCategory->id)->get();
+            foreach($product as $product){
+                $product->status = $productCategory->status;
+                $product->save();
+            }
         }
 
         $response['status'] = true;
@@ -316,7 +314,8 @@ class ProductController extends Controller
         return response($encryptedResponse, 200);
 
     }
-    public function productChangeStatus(Request $request){
+
+    public function changeStatus(Request $request){
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
@@ -337,13 +336,21 @@ class ProductController extends Controller
         $product = Product::where('id',$inputData->productId)->first();
 
         if(isset($product) && $product->status==1){
-                $changeStatus = 0;
+            $product->status = 0;
         }else{
-                $changeStatus = 1;
+            $product->status = 1;
         }
 
-        $product->status = $changeStatus;
         $product->save();
+
+        if(isset($product->id) && ($product->id!="" || $product->id!=null)){
+            $cart = Cart::where('product_id',$product->id)->get();
+
+            foreach($cart as $cart){
+                $cart->status = $product->status;
+                $cart->save();
+            }
+        }
 
         $response['status'] = true;
         $response['responseCode'] = 200;
