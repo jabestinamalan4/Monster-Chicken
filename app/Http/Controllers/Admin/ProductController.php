@@ -195,7 +195,7 @@ class ProductController extends Controller
         }
         $productCount = $query->count();
 
-        $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+        $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $totalArray = [];
 
@@ -379,9 +379,12 @@ class ProductController extends Controller
 
             $cart = Cart::where('product_id',$product->id)->get();
 
-            foreach($cart as $cart){
-                $cart->status = $product->status;
-                $cart->save();
+            foreach($cart as $carts){
+
+                $carts = Cart::where('id',$carts->id)->first();
+
+                $carts->status = $product->status;
+                $carts->save();
             }
         }
 
