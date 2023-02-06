@@ -274,4 +274,82 @@ class ProductController extends Controller
         return response($encryptedResponse, 200);
 
     }
+    public function changeStatus(Request $request){
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = ['productCategoryId' => 'required'];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+         if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $productCategory = ProductCategory::where('id',$inputData->productCategoryId)->first();
+
+        if(isset($productCategory) && $productCategory->status==1){
+                $changeStatus = 0;
+        }else{
+                $changeStatus = 1;
+        }
+
+        $productCategory->status = $changeStatus;
+        $productCategory->save();
+
+        if(isset($productCategory) && ($productCategory!="" || $productCategory!=null)){
+
+            $product = Product::where('category',$inputData->productCategoryId)->update(['status'=>$changeStatus]);
+        }
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Status Updated Successfully.'];
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+
+    }
+    public function productChangeStatus(Request $request){
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = ['productId' => 'required'];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+         if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $product = Product::where('id',$inputData->productId)->first();
+
+        if(isset($product) && $product->status==1){
+                $changeStatus = 0;
+        }else{
+                $changeStatus = 1;
+        }
+
+        $product->status = $changeStatus;
+        $product->save();
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Status Updated Successfully.'];
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
 }
