@@ -36,6 +36,8 @@ Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::post('register', [AuthController::class,'register']);
     Route::post('login', [AuthController::class,'login']);
 
+    Route::post('forget-password', [AuthController::class,'forgetPassword']);
+
     Route::post('profile', [UserController::class,'profile']);
     Route::post('dashboard', [UserController::class,'dashboard']);
 

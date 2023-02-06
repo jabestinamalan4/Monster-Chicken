@@ -67,6 +67,63 @@ class AuthController extends Controller
         return response($encryptedResponse, 200);
     }
 
+    public function forgetPassword(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+                        'userName' => 'required'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $user = User::where('email',$inputData->userName)->where('status',1)->first();
+
+
+        if (isset($user->id) && $user->status == 1) {
+
+            if ($user->hasRole(['super-admin','admin','manager','staff','relational-manager','tech-team']) == false) {
+                $response = ['status' => false, "message"=> ["You are not allowed to login here."], "responseCode" => 422];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+
+            $user->otp = random_int(100000, 999999);
+            $user->otp_requested_on = date('Y-m-d H:i:s');
+            $user->save();
+
+            dispatch(new SendEmailJob($user,'forget_password'));
+
+            $response['response']['userId'] = $this->encryptId($user->id);
+            $response['response']['emailId'] = $user->email;
+            $response['responseCode'] = 200;
+            $response['validate'] = true;
+            $response['status'] = true;
+            $response["message"] = ['Otp sent successfully.'];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 200);
+
+        }
+        else{
+            $response['responseCode'] = 400;
+            $response['status'] = false;
+            $response["message"] = ['User does not exist.'];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+    }
+
     public function login(Request $request)
     {
         if (gettype($request->input) == 'array') {
