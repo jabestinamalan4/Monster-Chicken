@@ -138,7 +138,8 @@ class ProductController extends Controller
         return response($encryptedResponse, 200);
     }
 
-    public function productList(Request $request){
+    public function productList(Request $request)
+    {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
@@ -152,6 +153,7 @@ class ProductController extends Controller
         $categories = ProductCategory::where('status',1)->get();
 
         foreach($categories as $category){
+
             $categoryDetail = [];
 
             $categoryDetail['categoryId'] = $this->encryptId($category->id);
@@ -178,11 +180,11 @@ class ProductController extends Controller
         }
 
         if (isset($inputData->maxPrice) && $inputData->maxPrice != null && $inputData->maxPrice != "") {
-            $query = $query->where('price',">=",$inputData->maxPrice);
+            $query = $query->where('price',"<=",$inputData->maxPrice);
         }
 
         if (isset($inputData->minPrice) && $inputData->minPrice != null && $inputData->minPrice != "") {
-            $query = $query->where('price',"<=",$inputData->minPrice);
+            $query = $query->where('price',">=",$inputData->minPrice);
         }
 
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
@@ -192,21 +194,33 @@ class ProductController extends Controller
           });
         }
         $productCount = $query->count();
+
         $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
+
         $totalArray = [];
+
         foreach($produts as $product){
             $productsList = [];
+            $imageList    = [];
+
             $category = ProductCategory::where('id',$product->category)->first();
+
             $productsList['id']             = $this->encryptId($product->id);
             $productsList['category']       = isset($category) && ($category!=null || $category!="" ) ? $category->category:"";
             $productsList['name']           = $product->name;
-            $productsList['imageUrl']       = Storage::disk('public')->url('document/'.implode(json_decode($product->image_url)));
             $productsList['description']    = $product->description;
             $productsList['price']          = $product->price;
             $productsList['discountPrice']  = $product->discount_price;
             $productsList['rating']         = $product->rating;
             $productsList['reviews']        = $product->reviews;
             $productsList['status']         = $product->status;
+
+            foreach((array)json_decode($product->image_url) as $image_url){
+                array_push($imageList,Storage::disk('public')->url('document/'.$image_url));
+            }
+
+            $productsList['imageUrl']       = $imageList;
+
             array_push($totalArray,$productsList);
         }
 
@@ -221,7 +235,8 @@ class ProductController extends Controller
          return response($encryptedResponse, 200);
 
     }
-    public function categoryList(Request $request){
+    public function categoryList(Request $request)
+    {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
@@ -249,6 +264,7 @@ class ProductController extends Controller
         $categories = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
         foreach($categories as $category){
+
             $categoryDetail = [];
 
             $categoryDetail['categoryId'] = $this->encryptId($category->id);
@@ -289,7 +305,7 @@ class ProductController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $productCategory = ProductCategory::where('id',$inputData->categoryId)->first();
+        $productCategory = ProductCategory::where('id',$this->decryptId($inputData->categoryId))->first();
 
         if(isset($productCategory) && $productCategory->status==1){
             $productCategory->status = 0;
@@ -299,7 +315,9 @@ class ProductController extends Controller
         $productCategory->save();
 
         if(isset($productCategory->id)){
+
             $product = Product::where('category',$productCategory->id)->get();
+
             foreach($product as $product){
                 $product->status = $productCategory->status;
                 $product->save();
@@ -315,7 +333,8 @@ class ProductController extends Controller
 
     }
 
-    public function changeStatus(Request $request){
+    public function changeStatus(Request $request)
+    {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
@@ -333,7 +352,7 @@ class ProductController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $product = Product::where('id',$inputData->productId)->first();
+        $product = Product::where('id',$this->decryptId($inputData->productId))->first();
 
         if(isset($product) && $product->status==1){
             $product->status = 0;
@@ -344,6 +363,7 @@ class ProductController extends Controller
         $product->save();
 
         if(isset($product->id) && ($product->id!="" || $product->id!=null)){
+
             $cart = Cart::where('product_id',$product->id)->get();
 
             foreach($cart as $cart){
