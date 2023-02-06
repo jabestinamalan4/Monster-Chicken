@@ -307,11 +307,18 @@ class ProductController extends Controller
 
         $productCategory = ProductCategory::where('id',$this->decryptId($inputData->categoryId))->first();
 
-        if(isset($productCategory) && $productCategory->status==1){
+        if(!isset($productCategory->id)){
+            $response = ['status' => false, "message"=> ["Invalid Category Id."], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        if(isset($productCategory->status) && $productCategory->status==1){
             $productCategory->status = 0;
         }else{
             $productCategory->status = 1;
         }
+
         $productCategory->save();
 
         if(isset($productCategory->id)){
@@ -354,7 +361,13 @@ class ProductController extends Controller
 
         $product = Product::where('id',$this->decryptId($inputData->productId))->first();
 
-        if(isset($product) && $product->status==1){
+        if(!isset($product->id)){
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        if(isset($product->status) && $product->status==1){
             $product->status = 0;
         }else{
             $product->status = 1;
