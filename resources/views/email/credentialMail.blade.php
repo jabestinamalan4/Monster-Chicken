@@ -1,5 +1,5 @@
 @component('mail::message')
-    {!! $mailContent !!}
+    {!! $mailData !!}
 
     Thanks,<br>
     Monster Chicken Team
