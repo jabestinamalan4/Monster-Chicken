@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,8 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus']);
     Route::post('product/change-status', [ProductController::class, 'changeStatus']);
+
+    Route::post('add-user', [UserController::class, 'addUser']);
 
 
 });
