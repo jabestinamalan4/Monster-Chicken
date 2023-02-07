@@ -37,6 +37,9 @@ Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::post('login', [AuthController::class,'login']);
 
     Route::post('forget-password', [AuthController::class,'forgetPassword']);
+    Route::post('resend-otp', [AuthController::class,'resendOtp']);
+    Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:api');
+    Route::post('update-password', [AuthController::class, 'updatePassword']);
 
     Route::post('profile', [UserController::class,'profile']);
     Route::post('dashboard', [UserController::class,'dashboard']);

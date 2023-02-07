@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Cart;
 use App\Models\User;
 use App\Models\Wishlist;
+use App\Jobs\SendEmailJob;
 use Illuminate\Http\Request;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
@@ -93,14 +94,13 @@ class AuthController extends Controller
 
         if (isset($user->id) && $user->status == 1) {
 
-            if ($user->hasRole(['super-admin','admin','manager','staff','relational-manager','tech-team']) == false) {
+            if ($user->hasRole(['customer']) == false) {
                 $response = ['status' => false, "message"=> ["You are not allowed to login here."], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
 
             $user->otp = random_int(100000, 999999);
-            $user->otp_requested_on = date('Y-m-d H:i:s');
             $user->save();
 
             dispatch(new SendEmailJob($user,'forget_password'));
@@ -119,6 +119,157 @@ class AuthController extends Controller
             $response['responseCode'] = 400;
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+    }
+
+    public function resendOtp(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+                        'userId' => 'required'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $user = User::where('id',$this->decryptId($inputData->userId))->where('status',1)->first();
+
+        if (isset($user->id) && $user->status == 1) {
+
+            $user->otp = random_int(100000, 999999);
+            $user->save();
+
+            dispatch(new SendEmailJob($user,'forget_password'));
+
+            $response['response']['userId'] = $this->encryptId($user->id);
+            $response['response']['emailId'] = $user->email;
+            $response['responseCode'] = 200;
+            $response['validate'] = true;
+            $response['status'] = true;
+            $response["message"] = ['Otp sent successfully.'];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 200);
+
+        }
+        else{
+            $response['responseCode'] = 400;
+            $response['status'] = false;
+            $response["message"] = ['User does not exist.'];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+    }
+
+    public function updatePassword(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+                        'userId' => 'required',
+                        'otp' => 'required|max:6',
+                        'password' => 'required'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $user = User::where('id',$this->decryptId($inputData->userId))->where('status',1)->first();
+
+        if (isset($user->id)) {
+
+            if ($inputData->otp == $user->otp) {
+
+                $user->password = Hash::make($inputData->password);
+                $user->otp = null;
+                $user->save();
+
+                $response = ['status' => true, "message"=> ['Updated successfully.'], "responseCode" => 200];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 200);
+
+            }
+            else{
+                $response = ['status' => false, "message"=> ['Invalid Otp.'], "responseCode" => 400];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid Credentials.'], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+    }
+
+    public function changePassword(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+                        'oldPassword' => 'required',
+                        'password' => 'required'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $user = User::where('id',auth()->user()->id)->where('status',1)->first();
+
+        if (isset($user->id)) {
+
+            if (Hash::check($inputData->oldPassword, $user->password)) {
+
+                $user->password = Hash::make($inputData->password);
+                $user->password_raw = $inputData->password;
+                $user->status = 1;
+                $user->otp = null;
+                $user->save();
+
+                $response = ['status' => true, "message"=> ['Updated successfully.'], "responseCode" => 200];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 200);
+            }
+            else{
+                $response = ['status' => false, "message"=> ['Invalid Old Password.'], "responseCode" => 400];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid Credentials.'], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
