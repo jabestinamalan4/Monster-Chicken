@@ -1,6 +1,6 @@
 @component('mail::message')
     {!! $mailData !!}
 
-    Thanks,<br>
+    Thanks,
     Monster Chicken Team
 @endcomponent
