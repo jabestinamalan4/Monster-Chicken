@@ -52,7 +52,6 @@ class UserController extends Controller
         $user->email = $inputData->email;
         $user->number = $inputData->number;
         $user->password = Hash::make($password);
-        $user->password_raw = $password;
         $user->status = 1;
 
         $user->save();
