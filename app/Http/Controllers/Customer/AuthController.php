@@ -253,8 +253,6 @@ class AuthController extends Controller
             if (Hash::check($inputData->oldPassword, $user->password)) {
 
                 $user->password = Hash::make($inputData->password);
-                $user->password_raw = $inputData->password;
-                $user->status = 1;
                 $user->otp = null;
                 $user->save();
 
