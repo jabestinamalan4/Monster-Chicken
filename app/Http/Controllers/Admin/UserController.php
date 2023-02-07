@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Jobs\SendEmailJob;
+
 use App\Http\Traits\HelperTrait;
 use Illuminate\Support\Facades\Validator;
 
@@ -69,5 +71,49 @@ class UserController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+    public function changeStatus(Request $request){
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [ 'userId' => 'required' ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $userDetails = User::where('id',$this->decryptId($inputData->userId))->first();
+
+        if(isset($userDetails->id) && ($userDetails->id!=null || $userDetails!="")){
+
+            if($userDetails->status==1){
+                $userDetails->status = 0;
+            }else{
+                $userDetails->status = 1;
+            }
+
+            $userDetails->save();
+        }
+        else{
+            $response = ['status' => false, "message"=>"Invalid User Id", "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Status Updated Successfully.'];
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+
     }
 }

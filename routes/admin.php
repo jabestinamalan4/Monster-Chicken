@@ -37,5 +37,7 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('add-user', [UserController::class, 'addUser']);
 
+    Route::post('change-user-status', [UserController::class, 'changeStatus']);
+
 
 });
