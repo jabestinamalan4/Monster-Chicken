@@ -23,6 +23,16 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('branch');
+        Schema::create('customer_details', function (Blueprint $table) {
+            $table->id();
+            $table->integer('user_id');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->integer('state');
+            $table->string('city');
+            $table->string('pin');
+            $table->string('address');
+            $table->timestamps();
+        });
     }
 };
