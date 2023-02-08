@@ -35,9 +35,9 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus']);
     Route::post('product/change-status', [ProductController::class, 'changeStatus']);
 
-    Route::post('add-user', [UserController::class, 'addUser']);
+    Route::post('add-user', [UserController::class, 'store']);
 
     Route::post('change-user-status', [UserController::class, 'changeStatus']);
 
-
+    Route::post('add-branch', [UserController::class, 'storeBranch']);
 });

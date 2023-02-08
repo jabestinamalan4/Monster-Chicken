@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Models\Branch;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class UserController extends Controller
 
     use HelperTrait;
 
-    public function addUser(Request $request)
+    public function store(Request $request)
     {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
@@ -71,7 +72,8 @@ class UserController extends Controller
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
     }
-    public function changeStatus(Request $request){
+    public function changeStatus(Request $request)
+    {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
@@ -91,7 +93,7 @@ class UserController extends Controller
 
         $userDetails = User::where('id',$this->decryptId($inputData->userId))->first();
 
-        if(isset($userDetails->id) && ($userDetails->id!=null || $userDetails!="")){
+        if(isset($userDetails->id)){
 
             if($userDetails->status==1){
                 $userDetails->status = 0;
@@ -114,5 +116,59 @@ class UserController extends Controller
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
 
+    }
+    public function storeBranch(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+            'address1' => 'required',
+            'address2' => 'required',
+            'pinCode' => 'required|min:6|max:6',
+            'district' => 'required',
+            'state' => 'required',
+            'number' => 'required|min:10|max:10',
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'staffs' => 'required',
+        ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        if (isset($inputData->branchId)) {
+            $insert = Branch::where('id',$this->decryptId($inputData->branchId))->first();
+        }
+        else{
+            $insert = new Branch;
+        }
+        $insert->address_line_1   = $inputData->address1;
+        $insert->address_line_2   = $inputData->address2;
+        $insert->pin_code         = $inputData->pinCode;
+        $insert->district         = $inputData->district;
+        $insert->latitude         = $inputData->latitude;
+        $insert->longitude        = $inputData->longitude;
+        $insert->staffs           = $inputData->staffs;
+        $insert->state            = $inputData->state;
+        $insert->number           = $inputData->number;
+
+        $insert->save();
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Registered successfully.'];
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
     }
 }
