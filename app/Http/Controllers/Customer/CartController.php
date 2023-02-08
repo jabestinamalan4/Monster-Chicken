@@ -88,6 +88,58 @@ class CartController extends Controller
         return response($encryptedResponse, 200);
     }
 
+    public function cartCheckout(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $inputUser = $request->user;
+
+        $rulesArray = [
+                        'cartId' => 'required|array',
+                        'firstName' => 'required',
+                        'lastName' => 'required',
+                        'state' => 'required',
+                        'city' => 'required',
+                        'pin' => 'required',
+                        'address' => 'required',
+                        'number' => 'required',
+                        'email' => 'required',
+                    ];
+
+        if(isset($inputData->diffShipAddress) && $inputData->diffShipAddress != null && $inputData->diffShipAddress != ""){
+            $rulesArray['shipFirstName'] = 'required';
+            $rulesArray['shipLastName'] = 'required';
+            $rulesArray['shipState'] = 'required';
+            $rulesArray['shipCity'] = 'required';
+            $rulesArray['shipPin'] = 'required';
+            $rulesArray['shipAddress'] = 'required';
+        }
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        foreach($inputData->cartId as $cartId){
+
+        }
+
+        $response['status'] = true;
+        $response['responseCode'] = 200;
+        $response["message"] = ['Saved successfully.'];
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
     public function cartList(Request $request)
     {
         if (gettype($request->input) == 'array') {
