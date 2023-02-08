@@ -26,6 +26,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['middleware'=>['decrypt']], function(){
     Route::post('login', [AuthController::class, 'login']);
 
+    Route::post('forget-password', [AuthController::class,'forgetPassword']);
+    Route::post('resend-otp', [AuthController::class,'resendOtp']);
+    Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:api');
+    Route::post('update-password', [AuthController::class, 'updatePassword']);
+
     Route::post('product/store', [ProductController::class, 'store']);
     Route::post('product/list', [ProductController::class, 'productList']);
 
