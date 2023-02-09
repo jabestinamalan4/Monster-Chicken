@@ -43,8 +43,8 @@ class FileController extends Controller
         $response['status'] = true;
         $response['response']['url'] = $fileName;
         $response['response']['previewUrl'] = Storage::disk('public')->url('document/'.$fileName);
-        $response['responseCode'] = 200;
         $response["message"] = ['Uploaded successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);

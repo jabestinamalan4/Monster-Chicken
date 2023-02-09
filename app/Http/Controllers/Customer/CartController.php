@@ -82,8 +82,8 @@ class CartController extends Controller
         $cart->save();
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -213,8 +213,8 @@ class CartController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
         $response['response']["cart"] = $cartArray;
         $response['response']["deliveryCharge"] = 15;
         $response['response']["totalCartPrice"] = $totalCartPrice;

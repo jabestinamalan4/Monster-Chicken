@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\VendorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,9 +41,13 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus']);
     Route::post('product/change-status', [ProductController::class, 'changeStatus']);
 
-    Route::post('add-user', [UserController::class, 'store']);
+    Route::post('add-user', [UserManagementController::class, 'store']);
 
-    Route::post('change-user-status', [UserController::class, 'changeStatus']);
+    Route::post('change-user-status', [UserManagementController::class, 'changeStatus']);
 
-    Route::post('add-branch', [UserController::class, 'storeBranch']);
+    Route::post('add-branch', [UserManagementController::class, 'storeBranch']);
+    Route::post('branch-list', [UserManagementController::class, 'branchList']);
+
+    Route::post('vendor/add-vendor', [VendorController::class, 'store']);
+    Route::post('vendor/list', [VendorController::class, 'vendorList']);
 });

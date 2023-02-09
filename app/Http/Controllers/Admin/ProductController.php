@@ -77,8 +77,8 @@ class ProductController extends Controller
         $product->save();
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -131,8 +131,8 @@ class ProductController extends Controller
         $category->save();
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -332,8 +332,8 @@ class ProductController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Status Updated Successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -389,8 +389,8 @@ class ProductController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Status Updated Successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);

@@ -60,8 +60,8 @@ class AuthController extends Controller
         $user->assignRole('customer');
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Registered successfully.'];
+        $response['responseCode'] = 200;
         $response['response']['accessToken'] = $this->getAccessToken($user);
 
         $encryptedResponse['data'] = $this->encryptData($response);
@@ -107,18 +107,18 @@ class AuthController extends Controller
 
             $response['response']['userId'] = $this->encryptId($user->id);
             $response['response']['emailId'] = $user->email;
-            $response['responseCode'] = 200;
             $response['validate'] = true;
             $response['status'] = true;
             $response["message"] = ['Otp sent successfully.'];
+            $response['responseCode'] = 200;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 200);
 
         }
         else{
-            $response['responseCode'] = 400;
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
+            $response['responseCode'] = 400;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -156,18 +156,18 @@ class AuthController extends Controller
 
             $response['response']['userId'] = $this->encryptId($user->id);
             $response['response']['emailId'] = $user->email;
-            $response['responseCode'] = 200;
             $response['validate'] = true;
             $response['status'] = true;
             $response["message"] = ['Otp sent successfully.'];
+            $response['responseCode'] = 200;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 200);
 
         }
         else{
-            $response['responseCode'] = 400;
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
+            $response['responseCode'] = 400;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
