@@ -99,8 +99,8 @@ class UserController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Retrieved successfully.'];
+        $response['responseCode'] = 200;
         $response['response']['categories'] = $categoryArray;
         $response['response']['products'] = $productArray;
         $response['response']['cartCount'] = $cartCount;
@@ -131,8 +131,8 @@ class UserController extends Controller
             }
 
             $response['status'] = true;
-            $response['responseCode'] = 200;
             $response["message"] = ['Retrieved successfully.'];
+            $response['responseCode'] = 200;
             $response['response']['userDetail'] = $userDetail;
             $response['response']['cartCount'] = $cartCount;
             $response['response']['wishlistCount'] = $wishlistCount;

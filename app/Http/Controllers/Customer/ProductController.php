@@ -57,6 +57,11 @@ class ProductController extends Controller
             $products = $products->where('category',$this->decryptId($inputData->category));
         }
 
+        if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
+            $products = $products->where('status',$inputData->status);
+        }
+
+
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
             $products = $products->where('name', 'like', '%'.$inputData->search.'%');
         }
@@ -109,8 +114,8 @@ class ProductController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Retrieved successfully.'];
+        $response['responseCode'] = 200;
         $response['response']['categories'] = $categoryArray;
         $response['response']['products'] = $productArray;
         $response['response']['totalCount'] = $totalCount;
@@ -202,8 +207,8 @@ class ProductController extends Controller
         $productDetail['imageUrl'] = $imageArray;
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Retrieved successfully.'];
+        $response['responseCode'] = 200;
         $response['response']['productDetail'] = $productDetail;
 
         $encryptedResponse['data'] = $this->encryptData($response);
@@ -275,8 +280,8 @@ class ProductController extends Controller
         $wishlist->save();
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -334,8 +339,8 @@ class ProductController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
         $response['response']["list"] = $listArray;
         $response['response']["totalCount"] = $totalCount;
 
@@ -370,8 +375,8 @@ class ProductController extends Controller
         }
 
         $response['status'] = true;
-        $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
         $response["categories"] = $categoryArray;
 
         $encryptedResponse['data'] = $this->encryptData($response);

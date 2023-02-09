@@ -62,16 +62,18 @@ class AuthController extends Controller
                     return response($encryptedResponse, 200);
                 }
                 else{
-                    $response['responseCode'] = 400;
                     $response['status'] = false;
                     $response["message"] = ['Invalid Credentials.'];
+                    $response['responseCode'] = 400;
+
                     $encryptedResponse['data'] = $this->encryptData($response);
                     return response($encryptedResponse, 400);
                 }
             } else {
-                $response['responseCode'] = 400;
                 $response['status'] = false;
                 $response["message"] = ['Invalid Credentials.'];
+                $response['responseCode'] = 400;
+
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -89,6 +91,7 @@ class AuthController extends Controller
                     $response['status'] = true;
                     $response['response']['userId'] = $this->encryptId($user->id);
                     $response['responseCode'] = 200;
+
                     $response["message"] = ['Logged in successfully.'];
                     $response['response']['accessToken'] = $this->getAccessToken($user);
                     $encryptedResponse['data'] = $this->encryptData($response);
@@ -97,9 +100,10 @@ class AuthController extends Controller
 
             }
 
-            $response['responseCode'] = 400;
             $response['status'] = false;
             $response["message"] = ['Invalid Credentials.'];
+            $response['responseCode'] = 400;
+
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -143,18 +147,19 @@ class AuthController extends Controller
 
             $response['response']['userId'] = $this->encryptId($user->id);
             $response['response']['emailId'] = $user->email;
-            $response['responseCode'] = 200;
             $response['validate'] = true;
             $response['status'] = true;
             $response["message"] = ['Otp sent successfully.'];
+            $response['responseCode'] = 200;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 200);
 
         }
         else{
-            $response['responseCode'] = 400;
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
+            $response['responseCode'] = 400;
+
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -192,18 +197,19 @@ class AuthController extends Controller
 
             $response['response']['userId'] = $this->encryptId($user->id);
             $response['response']['emailId'] = $user->email;
-            $response['responseCode'] = 200;
             $response['validate'] = true;
             $response['status'] = true;
             $response["message"] = ['Otp sent successfully.'];
+            $response['responseCode'] = 200;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 200);
 
         }
         else{
-            $response['responseCode'] = 400;
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
+            $response['responseCode'] = 400;
+
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
