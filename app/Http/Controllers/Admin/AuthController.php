@@ -34,7 +34,7 @@ class AuthController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -121,7 +121,7 @@ class AuthController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -131,7 +131,7 @@ class AuthController extends Controller
         if (isset($user->id) && $user->status == 1) {
 
             if ($user->hasRole('customer') != false) {
-                $response = ['status' => false, "message"=> ["You are not allowed to login here."], "responseCode" => 422];
+                $response = ['status' => false, "message"=> ["You are not allowed to login here."], "responseCode" => 400];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -176,7 +176,7 @@ class AuthController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -227,7 +227,7 @@ class AuthController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -277,7 +277,7 @@ class AuthController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }

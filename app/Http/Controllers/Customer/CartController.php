@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\ProductCategory;
@@ -33,7 +34,7 @@ class CartController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -43,7 +44,7 @@ class CartController extends Controller
         $productExist = Product::where('id',$productId)->where('status',1)->first();
 
         if(!isset($productExist->id)){
-            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -123,14 +124,31 @@ class CartController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
 
-        foreach($inputData->cartId as $cartId){
+        $cartArray = [];
 
+        foreach($inputData->cartId as $cartId){
+            $id = $this->decryptId($cartId);
+
+            $isExist = Cart::where('id',$id)->where('status',1)->first();
+
+            if(isset($isExist->id)){
+                array_push($isExist->id,$cartArray);
+            }
+            else{
+                $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 400];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
         }
+
+        $order = new Order;
+
+        $order->user_id = $inputUser->id;
 
         $response['status'] = true;
         $response['responseCode'] = 200;

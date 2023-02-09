@@ -308,7 +308,7 @@ class ProductController extends Controller
         $productCategory = ProductCategory::where('id',$this->decryptId($inputData->categoryId))->first();
 
         if(!isset($productCategory->id)){
-            $response = ['status' => false, "message"=> ["Invalid Category Id."], "responseCode" => 422];
+            $response = ['status' => false, "message"=> ["Invalid Category Id."], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -362,7 +362,7 @@ class ProductController extends Controller
         $product = Product::where('id',$this->decryptId($inputData->productId))->first();
 
         if(!isset($product->id)){
-            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 400];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
