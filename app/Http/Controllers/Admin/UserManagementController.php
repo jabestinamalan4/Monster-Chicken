@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use App\Models\Branch;
+use App\Models\Roles;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -31,21 +32,34 @@ class UserManagementController extends Controller
                         'name' => 'required',
                         'email' => 'required|unique:users',
                         'number' => 'required|unique:users',
+                        'role' => 'required',
                     ];
+
+        if(isset($inputData->role) && $inputData->role!='franchise'){
+            $rulesArray['admin_id']= 'required';
+        }
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
+        if(isset($inputData->role)){
+            $exitRoles = Roles::where('id',$inputData->role)->first();
 
+            if(!isset($exitRoles->id)) {
+                $response = ['status' => false, "message"=>"This role is does not exist", "responseCode" => 423];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
         if (isset($inputUser->id)) {
             $user = User::where('id',$this->encryptData($inputUser->id))->first();
 
             if(!isset($user->id)){
-                $response = ['status' => false, "message"=>"This user is does not exist", "responseCode" => 400];
+                $response = ['status' => false, "message"=>"This user is does not exist", "responseCode" => 423];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -53,16 +67,23 @@ class UserManagementController extends Controller
         else{
             $user = new User;
         }
-        $password = $this->generatePassword();
-        $user->name = $inputData->name;
-        $user->email = $inputData->email;
-        $user->number = $inputData->number;
-        $user->password = Hash::make($password);
-        $user->status = 1;
 
+        if($inputData->role=='franchise') {
+            $admin_id = 1;
+        }
+        else{
+            $admin_id = $this->decryptId($inputData->admin_id);
+        }
+        $password       = $this->generatePassword();
+        $user->name     = $inputData->name;
+        $user->email    = $inputData->email;
+        $user->number   = $inputData->number;
+        $user->password = Hash::make($password);
+        $user->status   = 1;
+        $user->admin_id = $admin_id;
         $user->save();
 
-        $user->assignRole('franchise');
+        $user->assignRole($inputData->role);
 
         if(isset($user->id) && ($user->id!=null || $user->id!="")){
             dispatch(new SendEmailJob($user,'add_user'));
@@ -144,6 +165,7 @@ class UserManagementController extends Controller
             'longitude' => 'required',
             'staffs' => 'required',
             'userId' => 'required',
+            'type' => 'required|numeric',
         ];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
@@ -176,6 +198,7 @@ class UserManagementController extends Controller
         $branch->state            = $inputData->state;
         $branch->number           = $inputData->number;
         $branch->user_id          = $this->decryptId($inputData->userId);
+        $branch->type             = $inputData->type;
         $branch->save();
 
         $response['status'] = true;
@@ -223,6 +246,7 @@ class UserManagementController extends Controller
             $branchList['userName']   = $user->name;
             $branchList['userEmail']  = $user->email;
             $branchList['userNumber'] = $user->number;
+            $branchList['type']       = $branch->type;
             $branchList['address1']   = $branch->address_line_1;
             $branchList['address2']   = $branch->address_line_2;
             $branchList['pinCode']    = $branch->pin_code;

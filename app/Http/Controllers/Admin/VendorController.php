@@ -94,14 +94,14 @@ class VendorController extends Controller
         }
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
             $search = $inputData->search;
-            $query = $query->where(function ($function) use($search) {
-                $function->where('name', 'like', '%' . $search . '%');
-                $function->where('email_id', 'like', '%' . $search . '%');
-                $function->where('number_1', 'like', '%' . $search . '%');
-                $function->where('number_2', 'like', '%' . $search . '%');
-                $function->where('type', 'like', '%' . $search . '%');
-                $function->where('district', 'like', '%' . $search . '%');
-                $function->where('state', 'like', '%' . $search . '%');
+            $query  = $query->where(function ($function) use($search) {
+                $function->Where('name', 'like', '%' . $search . '%');
+                $function->orWhere('email_id', 'like', '%' . $search . '%');
+                $function->orWhere('number_1', 'like', '%' . $search . '%');
+                $function->orWhere('number_2', 'like', '%' . $search . '%');
+                $function->orWhere('type', 'like', '%' . $search . '%');
+                $function->orWhere('district', 'like', '%' . $search . '%');
+                $function->orWhere('state', 'like', '%' . $search . '%');
           });
         }
 
