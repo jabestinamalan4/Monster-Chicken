@@ -171,7 +171,7 @@ class ProductController extends Controller
                 $categoryDetail['selected'] = false;
             }
 
-            array_push($categoryArray,$categoryDetail);
+            array_push($categoryArray,(object) $categoryDetail);
         }
         if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
             $query = $query->where('status',$inputData->status);
@@ -222,7 +222,7 @@ class ProductController extends Controller
 
             $productsList['imageUrl']       = $imageList;
 
-            array_push($totalArray,$productsList);
+            array_push($totalArray,(object) $productsList);
         }
 
 
@@ -275,7 +275,7 @@ class ProductController extends Controller
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;
 
-            array_push($categoryList,$categoryDetail);
+            array_push($categoryList,(object) $categoryDetail);
         }
 
         $response['status'] = true;

@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\OrderDetail;
 use Illuminate\Http\Request;
+use App\Models\CustomerDetail;
+use App\Models\ShippingDetail;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
@@ -112,7 +115,7 @@ class CartController extends Controller
                         'email' => 'required',
                     ];
 
-        if(isset($inputData->diffShipAddress) && $inputData->diffShipAddress != null && $inputData->diffShipAddress != ""){
+        if(isset($inputData->diffShipAddress) && $inputData->diffShipAddress == true){
             $rulesArray['shipFirstName'] = 'required';
             $rulesArray['shipLastName'] = 'required';
             $rulesArray['shipState'] = 'required';
@@ -130,6 +133,7 @@ class CartController extends Controller
         }
 
         $cartArray = [];
+        $totalCartPrice = 0;
 
         foreach($inputData->cartId as $cartId){
             $id = $this->decryptId($cartId);
@@ -137,7 +141,8 @@ class CartController extends Controller
             $isExist = Cart::where('id',$id)->where('status',1)->first();
 
             if(isset($isExist->id)){
-                array_push($isExist->id,$cartArray);
+                $totalCartPrice = $totalCartPrice + ((int) $isExist->product->price * (int) $isExist->quantity);
+                array_push($cartArray,$isExist->id);
             }
             else{
                 $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 400];
@@ -149,10 +154,81 @@ class CartController extends Controller
         $order = new Order;
 
         $order->user_id = $inputUser->id;
+        $order->note = $inputData->note;
+        $order->total_price = $totalCartPrice;
+        $order->status = 1;
+
+        $order->save();
+
+        $customerDetail = new CustomerDetail;
+        $customerDetail->user_id = $inputUser->id;
+        $customerDetail->first_name = $inputData->firstName;
+        $customerDetail->last_name = $inputData->lastName;
+        $customerDetail->state = $inputData->state;
+        $customerDetail->city = $inputData->city;
+        $customerDetail->pin = $inputData->pin;
+        $customerDetail->address = $inputData->address;
+        $customerDetail->number = $inputData->number;
+        $customerDetail->email = $inputData->email;
+        $customerDetail->status = isset($inputData->saveData) ? $inputData->saveData : 0;
+        $customerDetail->order_id = $order->id;
+
+        $customerDetail->save();
+
+        if(isset($inputData->diffShipAddress) && $inputData->diffShipAddress == true){
+
+            $shippingDetail = new ShippingDetail;
+            $shippingDetail->first_name = $inputData->shipFirstName;
+            $shippingDetail->last_name = $inputData->shipLastName;
+            $shippingDetail->state = $inputData->shipState;
+            $shippingDetail->city = $inputData->shipCity;
+            $shippingDetail->pin = $inputData->shipPin;
+            $shippingDetail->address = $inputData->shipAddress;
+            $shippingDetail->order_id = $order->id;
+
+            $shippingDetail->save();
+        }
+        else{
+            $shippingDetail = new ShippingDetail;
+            $shippingDetail->first_name = $inputData->firstName;
+            $shippingDetail->last_name = $inputData->lastName;
+            $shippingDetail->state = $inputData->state;
+            $shippingDetail->city = $inputData->city;
+            $shippingDetail->pin = $inputData->pin;
+            $shippingDetail->address = $inputData->address;
+            $shippingDetail->order_id = $order->id;
+
+            $shippingDetail->save();
+        }
+
+        foreach($cartArray as $cartId){
+
+            $cartData = Cart::where('id',$cartId)->where('status',1)->first();
+
+            if(isset($cartData->id)){
+                $orderDetail = new OrderDetail;
+
+                $orderDetail->order_id = $order->id;
+                $orderDetail->product_id = $cartData->product_id;
+                $orderDetail->quantity = $cartData->quantity;
+
+                $orderDetail->save();
+
+                $cartData->status = 0;
+
+                $cartData->save();
+            }
+            else{
+                $response = ['status' => false, "message"=> ['Invalid Cart ID.'], "responseCode" => 400];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
 
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response["response"]['orderId'] = $this->encryptId($order->id);
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -209,7 +285,67 @@ class CartController extends Controller
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
             $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
 
-            array_push($cartArray,$cartDetail);
+            array_push($cartArray,(object) $cartDetail);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
+        $response['response']["cart"] = $cartArray;
+        $response['response']["deliveryCharge"] = 15;
+        $response['response']["totalCartPrice"] = $totalCartPrice;
+        $response['response']["grandTotal"] = $totalCartPrice + 15;
+        $response['response']["totalCount"] = $totalCount;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function getCheckoutData(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $inputUser = $request->user;
+
+        if(isset($inputUser->id)){
+            $user = User::where('id',$inputUser->id)->where('status',1)->first();
+
+            if(isset($user->id)){
+                $checkOutData = [];
+                $checkOutData['name'] = $user->name;
+                $checkOutData['email'] = $user->email;
+                $checkOutData['number'] = $user->number;
+
+                $isCheckoutExist = CustomerDetail::where('user_id',$user->id)->where('status',1)->get();
+
+                $checkoutSuggestionArray = [];
+
+                foreach($isCheckoutExist as $suggestion){
+
+                    $suggestionArray = [];
+
+                    $suggestionArray['state'] = $suggestion->state;
+                    $suggestionArray['city'] = $suggestion->city;
+                    $suggestionArray['city'] = $suggestion->city;
+                    $suggestionArray['pin'] = $suggestion->pin;
+                    $suggestionArray['pin'] = $suggestion->pin;
+                    $suggestionArray['address'] = $suggestion->address;
+
+                    array_push($checkoutSuggestionArray,(object) $suggestionArray);
+                }
+
+                $checkOutData['suggestions'] = $checkoutSuggestionArray;
+            }
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid User.'], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
         }
 
         $response['status'] = true;

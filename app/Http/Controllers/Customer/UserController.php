@@ -47,7 +47,7 @@ class UserController extends Controller
                 $categoryDetail['selected'] = false;
             }
 
-            array_push($categoryArray,$categoryDetail);
+            array_push($categoryArray,(object) $categoryDetail);
         }
 
         $products = Product::where('status',1)->orderBy('id','Desc')->paginate(12);
@@ -86,7 +86,7 @@ class UserController extends Controller
 
             $productDetail['imageUrl'] = $imageArray;
 
-            array_push($productArray,$productDetail);
+            array_push($productArray,(object) $productDetail);
         }
 
         if (isset($inputUser->id)) {
