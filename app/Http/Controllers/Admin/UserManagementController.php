@@ -46,14 +46,13 @@ class UserManagementController extends Controller
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
-        if(isset($inputData->role)){
-            $exitRoles = Roles::where('id',$inputData->role)->first();
+        if ($this->isRoleExist($inputData->role)) {
 
-            if(!isset($exitRoles->id)) {
-                $response = ['status' => false, "message"=>"This role is does not exist", "responseCode" => 423];
-                $encryptedResponse['data'] = $this->encryptData($response);
-                return response($encryptedResponse, 400);
-            }
+        }
+        else{
+            $response = ['status' => false, "message"=> ['The given role does not exist.'], "responseCode" => 423];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
         }
         if (isset($inputUser->id)) {
             $user = User::where('id',$this->encryptData($inputUser->id))->first();
