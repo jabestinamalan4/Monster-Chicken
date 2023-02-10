@@ -332,8 +332,6 @@ class CartController extends Controller
 
                     $suggestionArray['state'] = $suggestion->state;
                     $suggestionArray['city'] = $suggestion->city;
-                    $suggestionArray['city'] = $suggestion->city;
-                    $suggestionArray['pin'] = $suggestion->pin;
                     $suggestionArray['pin'] = $suggestion->pin;
                     $suggestionArray['address'] = $suggestion->address;
 
