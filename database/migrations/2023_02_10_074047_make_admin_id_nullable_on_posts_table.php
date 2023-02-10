@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('admin_id')->nullable();
+            $table->integer('admin_id')->unsigned()->nullable()->change();
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('admin_id');
+            $table->integer('admin_id')->unsigned()->nullable(false)->change();
         });
     }
 };

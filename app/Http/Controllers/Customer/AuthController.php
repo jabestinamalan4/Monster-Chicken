@@ -30,7 +30,7 @@ class AuthController extends Controller
         $rulesArray = [
                         'name' => 'required',
                         'email' => 'required|unique:users',
-                        'number' => 'required|unique:users',
+                        'number' => 'required|unique:users|numeric|digits_between:10,15',
                         'password' => 'required'
                     ];
 
