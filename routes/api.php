@@ -54,4 +54,5 @@ Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::post('cart/list', [CartController::class,'cartList']);
 
     Route::post('cart/checkout', [CartController::class,'cartCheckout']);
+    Route::post('checkout/data', [CartController::class,'getCheckoutData']);
 });

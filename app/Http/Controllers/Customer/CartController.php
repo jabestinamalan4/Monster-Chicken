@@ -228,6 +228,7 @@ class CartController extends Controller
         $response['status'] = true;
         $response['responseCode'] = 200;
         $response["message"] = ['Saved successfully.'];
+        $response["response"]['orderId'] = $this->encryptId($order->id);
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -284,7 +285,67 @@ class CartController extends Controller
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
             $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
 
-            array_push($cartArray,$cartDetail);
+            array_push($cartArray,(object) $cartDetail);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
+        $response['response']["cart"] = $cartArray;
+        $response['response']["deliveryCharge"] = 15;
+        $response['response']["totalCartPrice"] = $totalCartPrice;
+        $response['response']["grandTotal"] = $totalCartPrice + 15;
+        $response['response']["totalCount"] = $totalCount;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function getCheckoutData(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $inputUser = $request->user;
+
+        if(isset($inputUser->id)){
+            $user = User::where('id',$inputUser->id)->where('status',1)->first();
+
+            if(isset($user->id)){
+                $checkOutData = [];
+                $checkOutData['name'] = $user->name;
+                $checkOutData['email'] = $user->email;
+                $checkOutData['number'] = $user->number;
+
+                $isCheckoutExist = CustomerDetail::where('user_id',$user->id)->where('status',1)->get();
+
+                $checkoutSuggestionArray = [];
+
+                foreach($isCheckoutExist as $suggestion){
+
+                    $suggestionArray = [];
+
+                    $suggestionArray['state'] = $suggestion->state;
+                    $suggestionArray['city'] = $suggestion->city;
+                    $suggestionArray['city'] = $suggestion->city;
+                    $suggestionArray['pin'] = $suggestion->pin;
+                    $suggestionArray['pin'] = $suggestion->pin;
+                    $suggestionArray['address'] = $suggestion->address;
+
+                    array_push($checkoutSuggestionArray,(object) $suggestionArray);
+                }
+
+                $checkOutData['suggestions'] = $checkoutSuggestionArray;
+            }
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid User.'], "responseCode" => 400];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
         }
 
         $response['status'] = true;

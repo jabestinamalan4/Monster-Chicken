@@ -255,7 +255,7 @@ class UserManagementController extends Controller
             $branchList['longitude']  = $branch->longitude;
             $branchList['staffs']     = $branch->staffs;
 
-            array_push($totalArray,$branchList);
+            array_push($totalArray,(object) $branchList);
         }
 
 

@@ -127,7 +127,7 @@ class VendorController extends Controller
             $vendorList['contactName']= $vendor->contact_name;
             $vendorList['status']     = $vendor->status;
 
-            array_push($totalArray,$vendorList);
+            array_push($totalArray,(object) $vendorList);
         }
 
 

@@ -48,7 +48,7 @@ class ProductController extends Controller
                 $categoryDetail['selected'] = false;
             }
 
-            array_push($categoryArray,$categoryDetail);
+            array_push($categoryArray,(object) $categoryDetail);
         }
 
         $products = Product::where('status',1);
@@ -110,7 +110,7 @@ class ProductController extends Controller
 
             $productDetail['imageUrl'] = $imageArray;
 
-            array_push($productArray,$productDetail);
+            array_push($productArray,(object) $productDetail);
         }
 
         $response['status'] = true;
@@ -335,7 +335,7 @@ class ProductController extends Controller
             $listDetail['rating'] = $list->product->rating;
             $listDetail['reviews'] = $list->product->reviews;
 
-            array_push($listArray,$listDetail);
+            array_push($listArray,(object) $listDetail);
         }
 
         $response['status'] = true;
@@ -371,7 +371,7 @@ class ProductController extends Controller
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;
 
-            array_push($categoryArray,$categoryDetail);
+            array_push($categoryArray,(object) $categoryDetail);
         }
 
         $response['status'] = true;
