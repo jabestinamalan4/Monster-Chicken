@@ -124,7 +124,7 @@ class UserManagementController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -142,7 +142,7 @@ class UserManagementController extends Controller
             $userDetails->save();
         }
         else{
-            $response = ['status' => false, "message"=>"Invalid User Id", "responseCode" => 400];
+            $response = ['status' => false, "message"=>"Invalid User Id", "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -163,7 +163,7 @@ class UserManagementController extends Controller
             $branch = Branch::where('id',$this->decryptId($inputData->branchId))->first();
 
             if(!isset($branch->id)) {
-                $response = ['status' => false, "message"=>"This branch is does not exist", "responseCode" => 400];
+                $response = ['status' => false, "message"=>"This branch is does not exist", "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -173,6 +173,7 @@ class UserManagementController extends Controller
         }
         $branch->address_line_1   = $inputData->address1;
         $branch->address_line_2   = $inputData->address2;
+
         $branch->pin_code         = $inputData->pinCode;
         $branch->district         = $inputData->district;
         $branch->latitude         = $inputData->latitude;

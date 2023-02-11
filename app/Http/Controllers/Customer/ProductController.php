@@ -142,7 +142,7 @@ class ProductController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -152,7 +152,7 @@ class ProductController extends Controller
         $product = Product::where('status',1)->where('id',$productId)->first();
 
         if (!isset($product->id)) {
-            $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -233,7 +233,7 @@ class ProductController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -243,7 +243,7 @@ class ProductController extends Controller
         $productExist = Product::where('id',$productId)->where('status',1)->first();
 
         if(!isset($productExist->id)){
-            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -256,7 +256,7 @@ class ProductController extends Controller
                 $wishlist = $isExist;
             }
             else{
-                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 400];
+                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }

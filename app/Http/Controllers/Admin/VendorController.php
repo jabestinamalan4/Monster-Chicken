@@ -39,7 +39,7 @@ class VendorController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -48,7 +48,7 @@ class VendorController extends Controller
             $vendor = Vendor::where('id',$this->decryptId($inputData->vendorId))->first();
 
             if(!isset($vendor->id)){
-                $response = ['status' => false, "message"=>"This vendor is does not exist", "responseCode" => 400];
+                $response = ['status' => false, "message"=>"This vendor is does not exist", "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }

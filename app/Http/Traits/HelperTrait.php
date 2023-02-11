@@ -73,7 +73,7 @@ trait HelperTrait {
                 $user->save();
             }
             else{
-                $response = ['status' => false, "message"=> ['This User does not have privilege'],"responseCode" => 400];
+                $response = ['status' => false, "message"=> ['This User does not have privilege'],"responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return $encryptedResponse;
             }
@@ -86,7 +86,7 @@ trait HelperTrait {
                 $user->save();
             }
             else{
-                $response = ['status' => false, "message"=> ['This User does not have privilege'],"responseCode" => 400];
+                $response = ['status' => false, "message"=> ['This User does not have privilege'],"responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return $encryptedResponse;
             }
