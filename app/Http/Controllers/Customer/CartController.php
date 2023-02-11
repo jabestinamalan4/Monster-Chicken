@@ -155,7 +155,7 @@ class CartController extends Controller
         $order = new Order;
 
         $order->user_id = $inputUser->id;
-        $order->note = isset($inputData->note) ? $inputData->note : null;
+        $order->note = isset($inputData->note) && ($inputData->note) ? $inputData->note:null;
         $order->total_price = $totalCartPrice;
         $order->status = 1;
 

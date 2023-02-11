@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Vendor;
+use App\Models\ProductCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Traits\HelperTrait;
@@ -22,16 +23,17 @@ class VendorController extends Controller
         }
 
         $rulesArray = [
-                        'type' => 'required|numeric',
+                        'type' => 'required|array',
                         'name' => 'required',
                         'address' => 'required',
                         'pinCode' => 'required|numeric|digits_between:6,6',
                         'district' => 'required',
                         'state' => 'required',
-                        'number1' => 'required|numeric|digits_between:10,15',
-                        'number2' => 'required|numeric|digits_between:10,15',
+                        'number' => 'required|numeric|digits_between:10,15',
                         'emailId' => 'required|email',
                         'contactName' => 'required',
+                        'latitude' =>'required|numeric|between:0,99.99',
+                        'longitude' => 'required|numeric|between:0,99.99',
                     ];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
@@ -54,16 +56,18 @@ class VendorController extends Controller
         else{
             $vendor = new Vendor;
         }
-        $vendor->type          = $inputData->type;
+
+        $vendor->type          = json_encode($inputData->type);
         $vendor->name          = $inputData->name;
         $vendor->address       = $inputData->address;
         $vendor->pin_code      = $inputData->pinCode;
         $vendor->district      = $inputData->district;
         $vendor->state         = $inputData->state;
-        $vendor->number_1      = $inputData->number1;
-        $vendor->number_2      = $inputData->number2;
+        $vendor->number        = $inputData->number;
         $vendor->email_id      = $inputData->emailId;
         $vendor->contact_name  = $inputData->contactName;
+        $vendor->latitude      = $inputData->latitude;
+        $vendor->longitude     = $inputData->longitude;
         $vendor->status        = 1;
         $vendor->save();
 
@@ -113,18 +117,31 @@ class VendorController extends Controller
 
         foreach($vendors as $vendor){
             $vendorList = [];
+            $categoryList = [];
+            $types =json_decode($vendor->type);
+            foreach((array)$types as $type) {
+                $productCat = [];
+
+                $category = ProductCategory::where('id',$type)->first();
+
+                $productCat['id']       = isset($category->id) ? $this->encryptId($category->id) :"";
+                $productCat['category'] = isset($category->category) ? $category->category : "";
+
+                array_push($categoryList,$productCat);
+            }
 
             $vendorList['id']         = $this->encryptId($vendor->id);
-            $vendorList['type']       = $vendor->type;
+            $vendorList['type']       = $categoryList;
             $vendorList['name']       = $vendor->name;
             $vendorList['address']    = $vendor->address;
             $vendorList['pinCode']    = $vendor->pin_code;
             $vendorList['district']   = $vendor->district;
             $vendorList['state']      = $vendor->state;
-            $vendorList['number1']    = $vendor->number_1;
-            $vendorList['number2']    = $vendor->number_2;
+            $vendorList['number']     = $vendor->number;
             $vendorList['emailId']    = $vendor->email_id;
             $vendorList['contactName']= $vendor->contact_name;
+            $vendorList['latitude']   = $vendor->latitude;
+            $vendorList['longitude']  = $vendor->longitude;
             $vendorList['status']     = $vendor->status;
 
             array_push($totalArray,(object) $vendorList);

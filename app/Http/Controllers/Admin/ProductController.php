@@ -94,7 +94,8 @@ class ProductController extends Controller
         }
 
         $rulesArray = [
-                        'category' => 'required|unique:product_categories'
+                        'category' => 'required|unique:product_categories',
+                        'imageUrl' => 'required'
                     ];
 
         if (isset($inputData->categoryId) && $inputData->categoryId != null && $inputData->categoryId != "") {

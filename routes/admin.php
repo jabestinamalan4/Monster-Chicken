@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['middleware'=>['decrypt']], function(){
+Route::group(['middleware'=>['decrypt','location']], function(){
     Route::post('login', [AuthController::class, 'login']);
 
     Route::post('forget-password', [AuthController::class,'forgetPassword']);
