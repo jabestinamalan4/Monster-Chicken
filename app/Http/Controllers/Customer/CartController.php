@@ -146,7 +146,7 @@ class CartController extends Controller
                 array_push($cartArray,$isExist->id);
             }
             else{
-                $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 422];
+                $response = ['status' => false, "message"=> ['Invalid Cart ID.'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -313,6 +313,18 @@ class CartController extends Controller
 
         $inputUser = $request->user;
 
+        $rulesArray = [
+                        'cartId' => 'required|array'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
         if(isset($inputUser->id)){
             $user = User::where('id',$inputUser->id)->where('status',1)->first();
 
@@ -386,7 +398,7 @@ class CartController extends Controller
                         array_push($cartArray,$cartDetail);
                     }
                     else{
-                        $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 422];
+                        $response = ['status' => false, "message"=> ['Invalid Cart ID.'], "responseCode" => 422];
                         $encryptedResponse['data'] = $this->encryptData($response);
                         return response($encryptedResponse, 400);
                     }
