@@ -2,10 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\PurchaseOrderController;
+use App\Http\Controllers\Admin\UserManagementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,22 +33,25 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('change-password', [AuthController::class, 'changePassword'])->middleware('auth:api');
     Route::post('update-password', [AuthController::class, 'updatePassword']);
 
-    Route::post('product/store', [ProductController::class, 'store']);
-    Route::post('product/list', [ProductController::class, 'productList']);
+    Route::post('product/store', [ProductController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('product/list', [ProductController::class, 'productList'])->middleware(['role:admin|franchise','auth:api']);
 
-    Route::post('product/category-store', [ProductController::class, 'storeCategory']);
-    Route::post('product/category-list', [ProductController::class, 'categoryList']);
+    Route::post('product/category-store', [ProductController::class, 'storeCategory'])->middleware(['role:admin','auth:api']);
+    Route::post('product/category-list', [ProductController::class, 'categoryList'])->middleware(['role:admin','auth:api']);
 
-    Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus']);
-    Route::post('product/change-status', [ProductController::class, 'changeStatus']);
+    Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus'])->middleware(['role:admin','auth:api']);
+    Route::post('product/change-status', [ProductController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
-    Route::post('add-user', [UserManagementController::class, 'store']);
+    Route::post('add-user', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
 
-    Route::post('change-user-status', [UserManagementController::class, 'changeStatus']);
+    Route::post('change-user-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
-    Route::post('add-branch', [UserManagementController::class, 'storeBranch']);
-    Route::post('branch-list', [UserManagementController::class, 'branchList']);
+    Route::post('add-branch', [UserManagementController::class, 'storeBranch'])->middleware(['role:admin','auth:api']);
+    Route::post('branch-list', [UserManagementController::class, 'branchList'])->middleware(['role:admin','auth:api']);
 
-    Route::post('vendor/add-vendor', [VendorController::class, 'store']);
-    Route::post('vendor/list', [VendorController::class, 'vendorList']);
+    Route::post('vendor/add-vendor', [VendorController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('vendor/list', [VendorController::class, 'vendorList'])->middleware(['role:admin','auth:api']);
+
+    Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
+
 });

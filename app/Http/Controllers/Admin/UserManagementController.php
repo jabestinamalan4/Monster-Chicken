@@ -25,7 +25,7 @@ class UserManagementController extends Controller
             $inputData = $request->input;
         }
 
-        $inputUser = $request->user;
+        $inputUser = auth()->user();
 
         $rulesArray = [
                         'name' => 'required',
