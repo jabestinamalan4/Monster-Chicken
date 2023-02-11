@@ -36,7 +36,7 @@ class ProductController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -44,7 +44,7 @@ class ProductController extends Controller
         $isExist = ProductCategory::where('id',$inputData->category)->where('status',1)->first();
 
         if (!isset($isExist->id)) {
-            $response = ['status' => false, "message"=> ['Invalid Category'], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ['Invalid Category'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -55,7 +55,7 @@ class ProductController extends Controller
                 $product = $isExist;
             }
             else{
-                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 400];
+                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -104,7 +104,7 @@ class ProductController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -115,7 +115,7 @@ class ProductController extends Controller
                 $category = $isExist;
             }
             else{
-                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 400];
+                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -300,7 +300,7 @@ class ProductController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
          if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -308,7 +308,7 @@ class ProductController extends Controller
         $productCategory = ProductCategory::where('id',$this->decryptId($inputData->categoryId))->first();
 
         if(!isset($productCategory->id)){
-            $response = ['status' => false, "message"=> ["Invalid Category Id."], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ["Invalid Category Id."], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -354,7 +354,7 @@ class ProductController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
          if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -362,7 +362,7 @@ class ProductController extends Controller
         $product = Product::where('id',$this->decryptId($inputData->productId))->first();
 
         if(!isset($product->id)){
-            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }

@@ -38,7 +38,7 @@ class CartController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -48,7 +48,7 @@ class CartController extends Controller
         $productExist = Product::where('id',$productId)->where('status',1)->first();
 
         if(!isset($productExist->id)){
-            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ["Invalid Product Id."], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -61,7 +61,7 @@ class CartController extends Controller
                 $cart = $isExist;
             }
             else{
-                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 400];
+                $response = ['status' => false, "message"=> ['Invalid Id'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -128,7 +128,7 @@ class CartController extends Controller
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -146,7 +146,7 @@ class CartController extends Controller
                 array_push($cartArray,$isExist->id);
             }
             else{
-                $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 400];
+                $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -220,7 +220,7 @@ class CartController extends Controller
                 $cartData->save();
             }
             else{
-                $response = ['status' => false, "message"=> ['Invalid Cart ID.'], "responseCode" => 400];
+                $response = ['status' => false, "message"=> ['Invalid Cart ID.'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -386,7 +386,7 @@ class CartController extends Controller
                         array_push($cartArray,$cartDetail);
                     }
                     else{
-                        $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 400];
+                        $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 422];
                         $encryptedResponse['data'] = $this->encryptData($response);
                         return response($encryptedResponse, 400);
                     }
@@ -396,7 +396,7 @@ class CartController extends Controller
             }
         }
         else{
-            $response = ['status' => false, "message"=> ['Invalid User.'], "responseCode" => 400];
+            $response = ['status' => false, "message"=> ['Invalid User.'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
