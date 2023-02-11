@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Crypt;
 use App\Models\User;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Hash;
@@ -63,7 +64,7 @@ class UserManagementController extends Controller
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
-        if (isset($inputDatas->userId)) {
+        if (isset($inputData->userId)) {
             $user = User::where('id',$this->decryptId($inputData->userId))->first();
 
             if(!isset($user->id)){
@@ -81,6 +82,7 @@ class UserManagementController extends Controller
         $user->email    = $inputData->email;
         $user->number   = $inputData->number;
         $user->password = Hash::make($password);
+        $user->password_raw = $password;
         $user->status   = 1;
         if($inputData->role =='cuttingCenter' && $inputData->role=='retailer'){
             $user->admin_id = $this->decryptId($inputData->admin_id);
@@ -251,6 +253,66 @@ class UserManagementController extends Controller
          $response["message"] = ['Retrieved Successfully.'];
          $response['response']["Branch"] = $totalArray;
          $response['response']["totalBranch"] = $branchCount;
+
+         $encryptedResponse['data'] = $this->encryptData($response);
+         return response($encryptedResponse, 200);
+    }
+
+    public function userList(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $query = User::query();
+
+        if (isset($inputData->adminId) && $inputData->adminId != null && $inputData->adminId != "") {
+            $query = $query->where('admin_id',$this->decryptId($inputData->adminId));
+        }
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+            $query  = $query->where(function ($function) use($search) {
+                $function->Where('name', 'like', '%' . $search . '%');
+          });
+        }
+
+        $userCount = $query->count();
+
+        $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
+        $totalArray = [];
+
+        foreach($users as $user){
+            $userList   = [];
+            $adminList  = [];
+
+            $admin = User::where('id',$user->admin_id)->first();
+
+            if(isset($admin)) {
+                $adminarr = [];
+
+                $adminarr['name'] = $admin->name;
+                $adminarr['email'] = $admin->name;
+
+                array_push($adminList,$adminarr);
+            }
+
+            $userList['id']     = $this->encryptId($user->id);
+            $userList['name']   = $user->name;
+            $userList['email']  = $user->email;
+            $userList['number'] = $user->number;
+            $userList['admin']  = $adminList;
+
+            array_push($totalArray,(object) $userList);
+        }
+
+        $response['status'] = true;
+         $response["message"] = ['Retrieved Successfully.'];
+         $response['response']["user"] = $totalArray;
+         $response['response']["totaLUser"] = $userCount;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);
