@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\PriceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,5 +54,7 @@ Route::group(['middleware'=>['decrypt','location']], function(){
     Route::post('vendor/list', [VendorController::class, 'vendorList'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
+
+    Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
 
 });
