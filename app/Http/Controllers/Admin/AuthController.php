@@ -64,7 +64,7 @@ class AuthController extends Controller
                 else{
                     $response['status'] = false;
                     $response["message"] = ['Invalid Credentials.'];
-                    $response['responseCode'] = 400;
+                    $response['responseCode'] = 422;
 
                     $encryptedResponse['data'] = $this->encryptData($response);
                     return response($encryptedResponse, 400);
@@ -72,7 +72,7 @@ class AuthController extends Controller
             } else {
                 $response['status'] = false;
                 $response["message"] = ['Invalid Credentials.'];
-                $response['responseCode'] = 400;
+                $response['responseCode'] = 422;
 
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
@@ -102,7 +102,7 @@ class AuthController extends Controller
 
             $response['status'] = false;
             $response["message"] = ['Invalid Credentials.'];
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
 
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
@@ -158,7 +158,7 @@ class AuthController extends Controller
         else{
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
 
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
@@ -208,7 +208,7 @@ class AuthController extends Controller
         else{
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
 
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);

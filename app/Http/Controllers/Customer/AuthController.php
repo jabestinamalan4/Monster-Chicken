@@ -118,7 +118,7 @@ class AuthController extends Controller
         else{
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -167,7 +167,7 @@ class AuthController extends Controller
         else{
             $response['status'] = false;
             $response["message"] = ['User does not exist.'];
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -305,7 +305,7 @@ class AuthController extends Controller
         $user = User::where('email',$inputData->userName)->where('status',1)->first();
 
         if ($user->hasRole('customer') != true) {
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
             $response['status'] = false;
             $response["message"] = ['Customer login is invalid.'];
             $encryptedResponse['data'] = $this->encryptData($response);
@@ -334,14 +334,14 @@ class AuthController extends Controller
                     return response($encryptedResponse, 200);
                 }
                 else{
-                    $response['responseCode'] = 400;
+                    $response['responseCode'] = 422;
                     $response['status'] = false;
                     $response["message"] = ['Invalid Credentials.'];
                     $encryptedResponse['data'] = $this->encryptData($response);
                     return response($encryptedResponse, 400);
                 }
             } else {
-                $response['responseCode'] = 400;
+                $response['responseCode'] = 422;
                 $response['status'] = false;
                 $response["message"] = ['Invalid Credentials.'];
                 $encryptedResponse['data'] = $this->encryptData($response);
@@ -391,7 +391,7 @@ class AuthController extends Controller
 
             }
 
-            $response['responseCode'] = 400;
+            $response['responseCode'] = 422;
             $response['status'] = false;
             $response["message"] = ['Invalid Credentials.'];
             $encryptedResponse['data'] = $this->encryptData($response);
