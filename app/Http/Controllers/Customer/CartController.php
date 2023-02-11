@@ -417,7 +417,10 @@ class CartController extends Controller
         $response["message"] = ['Saved successfully.'];
         $response['responseCode'] = 200;
         $response['response']["checkOutData"] = $checkOutData;
+        $response['response']["deliveryCharge"] = 15;
+        $response['response']["offerPrice"] = 0;
         $response['response']["totalCartPrice"] = $totalCartPrice;
+        $response['response']["grandTotal"] = $totalCartPrice + 15;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
