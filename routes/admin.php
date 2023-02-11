@@ -45,8 +45,8 @@ Route::group(['middleware'=>['decrypt','location']], function(){
 
     Route::post('change-user-status', [UserManagementController::class, 'changeStatus']);
 
-    Route::post('add-branch', [UserManagementController::class, 'storeBranch']);
-    Route::post('branch-list', [UserManagementController::class, 'branchList']);
+    //Route::post('add-branch', [UserManagementController::class, 'storeBranch']);
+    //Route::post('branch-list', [UserManagementController::class, 'branchList']);
 
     Route::post('vendor/add-vendor', [VendorController::class, 'store']);
     Route::post('vendor/list', [VendorController::class, 'vendorList']);

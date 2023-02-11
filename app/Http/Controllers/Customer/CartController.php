@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Models\Cart;
+use App\Models\User;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\OrderDetail;
@@ -154,7 +155,7 @@ class CartController extends Controller
         $order = new Order;
 
         $order->user_id = $inputUser->id;
-        $order->note = $inputData->note;
+        $order->note = isset($inputData->note) && ($inputData->note) ? $inputData->note:null;
         $order->total_price = $totalCartPrice;
         $order->status = 1;
 

@@ -25,8 +25,6 @@ class UserManagementController extends Controller
             $inputData = $request->input;
         }
 
-        $inputUser = $request->user;
-
         $rulesArray = [
                         'name' => 'required',
                         'email' => 'required|unique:users',
@@ -34,8 +32,18 @@ class UserManagementController extends Controller
                         'role' => 'required',
                     ];
 
-        if(isset($inputData->role) && $inputData->role!='franchise'){
+        if(isset($inputData->role) && ($inputData->role=='cuttingCenter' || $inputData->role=='retailer')){
             $rulesArray['admin_id']= 'required';
+            $rulesArray['address1']= 'required';
+            $rulesArray['address2']= 'required';
+            $rulesArray['pinCode'] = 'required|min:6|max:6';
+            $rulesArray['district']= 'required';
+            $rulesArray['state']   = 'required';
+            $rulesArray['number']  = 'required|unique:branches|min:10|max:10';
+            $rulesArray['latitude']= 'required';
+            $rulesArray['longitude']= 'required|numeric|between:0,99.99';
+            $rulesArray['staffs']   = 'required|numeric|between:0,99.99';
+            $rulesArray['type']   = 'required|numeric';
         }
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
@@ -53,8 +61,8 @@ class UserManagementController extends Controller
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
-        if (isset($inputUser->id)) {
-            $user = User::where('id',$this->encryptData($inputUser->id))->first();
+        if (isset($inputDatas->userId)) {
+            $user = User::where('id',$this->decryptId($inputData->userId))->first();
 
             if(!isset($user->id)){
                 $response = ['status' => false, "message"=>"This user is does not exist", "responseCode" => 423];
@@ -87,6 +95,9 @@ class UserManagementController extends Controller
             dispatch(new SendEmailJob($user,'add_user'));
         }
 
+        if(isset($inputData->role) && $inputData->role=='cuttingCenter' || $inputData->role=='retailer'){
+             $this->storeBranch($inputData,$user->id);
+        }
 
         $response['status'] = true;
         $response["message"] = ['Registered successfully.'];
@@ -143,36 +154,8 @@ class UserManagementController extends Controller
 
     }
 
-    public function storeBranch(Request $request)
+    public function storeBranch($inputData,$userId)
     {
-        if (gettype($request->input) == 'array') {
-            $inputData = (object) $request->input;
-        }
-        else{
-            $inputData = $request->input;
-        }
-
-        $rulesArray = [
-            'address1' => 'required',
-            'address2' => 'required',
-            'pinCode' => 'required|min:6|max:6',
-            'district' => 'required',
-            'state' => 'required',
-            'number' => 'required|unique:branches|min:10|max:10',
-            'latitude' => 'required|numeric|between:0,99.99',
-            'longitude' => 'required|numeric|between:0,99.99',
-            'staffs' => 'required',
-            'userId' => 'required',
-            'type' => 'required|numeric',
-        ];
-
-        $validatedData = Validator::make((array)$inputData, $rulesArray);
-
-        if($validatedData->fails()) {
-            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 400];
-            $encryptedResponse['data'] = $this->encryptData($response);
-            return response($encryptedResponse, 400);
-        }
 
         if (isset($inputData->branchId)) {
             $branch = Branch::where('id',$this->decryptId($inputData->branchId))->first();
