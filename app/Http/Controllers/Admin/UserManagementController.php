@@ -74,20 +74,22 @@ class UserManagementController extends Controller
             $user = new User;
         }
 
-        if($inputData->role=='franchise') {
-            $admin_id = 1;
-        }
-        else{
-            $admin_id = $this->decryptId($inputData->admin_id);
-        }
         $password       = $this->generatePassword();
         $user->name     = $inputData->name;
         $user->email    = $inputData->email;
         $user->number   = $inputData->number;
         $user->password = Hash::make($password);
         $user->status   = 1;
-        $user->admin_id = $admin_id;
+        if($inputData->role =='cuttingCenter' && $inputData->role=='retailer'){
+            $user->admin_id = $this->decryptId($inputData->admin_id);
+        }
         $user->save();
+
+        if($inputData->role =='franchise'){
+            $user->admin_id  = $user->id;
+            $user->save();
+        }
+
 
         $user->assignRole($inputData->role);
 
