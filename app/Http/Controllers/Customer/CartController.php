@@ -339,6 +339,60 @@ class CartController extends Controller
                 }
 
                 $checkOutData['suggestions'] = $checkoutSuggestionArray;
+
+                $cartArray = [];
+                $totalCartPrice = 0;
+
+                foreach($inputData->cartId as $cartId){
+                    $id = $this->decryptId($cartId);
+
+                    $isExist = Cart::where('id',$id)->where('status',1)->first();
+
+                    if(isset($isExist->id)){
+
+                        $cart = $isExist;
+
+                        $cartDetail['cartId'] = $this->encryptId($cart->id);
+                        $cartDetail['productId'] = $this->encryptId($cart->product->id);
+                        $cartDetail['productName'] = $cart->product->name;
+                        $cartDetail['stock'] = 20;
+                        $cartDetail['maxQuantity'] = 10;
+
+                        $isCategoryExist = ProductCategory::where('status',1)->where('id',$cart->product->category)->first();
+                        if (isset($isCategoryExist->id)) {
+                            $cartDetail['productCategory'] = $isCategoryExist->category;
+                        }
+                        else{
+                            $cartDetail['productCategory'] = "";
+                        }
+
+                        $imageArray = [];
+
+                        foreach(json_decode($cart->product->image_url) as $image){
+                            $imageUrl = Storage::disk('public')->url('document/'.$image);
+
+                            array_push($imageArray,$imageUrl);
+                        }
+
+                        $cartDetail['imageUrl'] = $imageArray;
+
+                        $cartDetail['quantity'] = $cart->quantity;
+                        $cartDetail['price'] = $cart->product->price;
+                        $cartDetail['rating'] = $cart->product->rating;
+                        $cartDetail['reviews'] = $cart->product->reviews;
+                        $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
+                        $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
+
+                        array_push($cartArray,$cartDetail);
+                    }
+                    else{
+                        $response = ['status' => false, "message"=> ['Invaid Cart ID.'], "responseCode" => 400];
+                        $encryptedResponse['data'] = $this->encryptData($response);
+                        return response($encryptedResponse, 400);
+                    }
+                }
+
+                $checkOutData['cartData'] = $cartArray;
             }
         }
         else{
@@ -351,6 +405,7 @@ class CartController extends Controller
         $response["message"] = ['Saved successfully.'];
         $response['responseCode'] = 200;
         $response['response']["checkOutData"] = $checkOutData;
+        $response['response']["totalCartPrice"] = $totalCartPrice;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
