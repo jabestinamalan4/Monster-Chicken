@@ -38,17 +38,15 @@ class UserManagementController extends Controller
                     ];
 
         if(isset($inputData->role) && ($inputData->role=='cuttingCenter' || $inputData->role=='retailer')){
-            $rulesArray['admin_id']= 'required';
             $rulesArray['address1']= 'required';
             $rulesArray['address2']= 'required';
             $rulesArray['pinCode'] = 'required|min:6|max:6';
             $rulesArray['district']= 'required';
-            $rulesArray['state']   = 'required';
-            $rulesArray['number']  = 'required|unique:branches|min:10|max:10';
-            $rulesArray['latitude']= 'required';
+            $rulesArray['state']   = 'required|numeric';
+            $rulesArray['number']  = 'required|unique:branches|min:10|max:15';
+            $rulesArray['latitude']= 'required|numeric|between:0,99.99';
             $rulesArray['longitude']= 'required|numeric|between:0,99.99';
-            $rulesArray['staffs']   = 'required|numeric|between:0,99.99';
-            $rulesArray['type']   = 'required|numeric';
+            $rulesArray['staffs']   = 'required';
         }
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
@@ -58,14 +56,13 @@ class UserManagementController extends Controller
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
-        if ($this->isRoleExist($inputData->role)) {
 
-        }
-        else{
+        if ($this->isRoleExist($inputData->role) == false) {
             $response = ['status' => false, "message"=> ['The given role does not exist.'], "responseCode" => 423];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
+
         if (isset($inputData->userId)) {
             $user = User::where('id',$this->decryptId($inputData->userId))->first();
 
@@ -86,15 +83,25 @@ class UserManagementController extends Controller
         $user->password = Hash::make($password);
         $user->password_raw = $password;
         $user->status   = 1;
-        if($inputData->role =='cuttingCenter' && $inputData->role=='retailer'){
-            $user->admin_id = $this->decryptId($inputData->admin_id);
-        }
-        $user->save();
 
-        if($inputData->role =='franchise'){
-            $user->admin_id  = $user->id;
-            $user->save();
+        if($inputData->role =='cuttingCenter' && $inputData->role=='retailer' && isset($inputData->adminId)){
+
+            $isExistUser = User::where('id',$inputData->adminId)->where('status',1)->first();
+
+            if(isset($isExistUser->id)){
+                $user->admin_id = $this->decryptId($inputData->adminId);
+            }
+            else{
+                $response = ['status' => false, "message"=>"Invalid admin Id.", "responseCode" => 423];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
         }
+        else{
+            $user->admin_id  = auth()->user()->id;
+        }
+
+        $user->save();
 
 
         $user->assignRole($inputData->role);
@@ -104,7 +111,7 @@ class UserManagementController extends Controller
         }
 
         if(isset($inputData->role) && $inputData->role=='cuttingCenter' || $inputData->role=='retailer'){
-             $this->storeBranch($inputData,$user->id);
+            $this->storeBranch($inputData,$user->id);
         }
 
         $response['status'] = true;
