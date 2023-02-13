@@ -30,7 +30,7 @@ Route::post('encrypt', [EncryptController::class, 'encrypt']);
 
 Route::post('file/upload', [FileController::class,'upload']);
 
-Route::group(['middleware'=>['decrypt','deviceMap']], function(){
+Route::group(['middleware'=>['decrypt','deviceMap','location']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);
 
     Route::post('register', [AuthController::class,'register']);
