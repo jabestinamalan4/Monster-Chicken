@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Cart;
 use App\Models\User;
 use App\Models\Order;
+use App\Models\State;
 use App\Models\Product;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
