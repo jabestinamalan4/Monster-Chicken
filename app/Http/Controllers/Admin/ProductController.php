@@ -225,7 +225,7 @@ class ProductController extends Controller
 
                 $imageData['fileName'] = $imageUrl;
                 $imageData['previewUrl'] = Storage::disk('public')->url('document/'.$imageUrl);
-                array_push($imageList,$imageData);
+                array_push($imageList,(object) $imageData);
             }
 
             $productsList['imageUrl']       = $imageList;
