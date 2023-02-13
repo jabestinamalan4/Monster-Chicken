@@ -46,8 +46,6 @@ class PurchaseOrderController extends Controller
                 $product = json_decode($product);
             }
 
-            dump($product);
-
             if(isset($product->id) && isset($product->quantity)){
                 $isExist = Product::where('id',$this->decryptId($product->id))->where('status',1)->first();
 
@@ -119,8 +117,11 @@ class PurchaseOrderController extends Controller
             $itemData->save();
         }
 
-        foreach($missedItems as $delete){
-            $delete->delete();
+        if(isset($missedItems) && count($missedItems) != 0){
+
+            foreach($missedItems as $delete){
+                $delete->delete();
+            }
         }
 
         $response['status'] = true;
