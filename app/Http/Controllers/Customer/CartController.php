@@ -425,4 +425,10 @@ class CartController extends Controller
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
     }
+
+    public function stateList(Request $request)
+    {
+        
+    }
+
 }

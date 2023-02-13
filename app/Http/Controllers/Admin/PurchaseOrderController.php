@@ -31,6 +31,7 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
+        $productArray = [];
         $orderData = [];
 
         foreach($productData as $product){
@@ -43,6 +44,8 @@ class PurchaseOrderController extends Controller
 
                     $productDetail['id'] = $isExist->id;
                     $productDetail['quantity'] = $product->quantity;
+
+                    array_push($productArray,$isExist->id);
 
                     array_push($orderData,(object) $productDetail);
                 }
