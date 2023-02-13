@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\General\FileController;
 use App\Http\Controllers\Customer\AuthController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\UserController;
@@ -27,8 +26,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('unauthorized', [EncryptController::class,'unauthorized'])->name('unauthenticated');
 Route::post('decrypt', [EncryptController::class, 'decrypt'])->middleware(['decrypt']);
 Route::post('encrypt', [EncryptController::class, 'encrypt']);
-
-Route::post('file/upload', [FileController::class,'upload']);
 
 Route::group(['middleware'=>['decrypt','deviceMap']], function(){
     Route::get('test', [EncryptController::class,'test'])->middleware(['auth:api']);

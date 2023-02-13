@@ -3,11 +3,12 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\PriceController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\General\FileController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\UserManagementController;
-use App\Http\Controllers\Admin\PriceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,5 +59,7 @@ Route::group(['middleware'=>['decrypt','location']], function(){
 
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('price/list', [PriceController::class, 'priceList'])->middleware(['role:admin','auth:api']);
+
+    Route::post('file/upload', [FileController::class,'upload']);
 
 });
