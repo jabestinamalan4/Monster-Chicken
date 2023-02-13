@@ -195,7 +195,6 @@ class UserManagementController extends Controller
         $branch->state            = $inputData->state;
         $branch->number           = $inputData->number;
         $branch->user_id          = $this->decryptId($inputData->userId);
-        $branch->type             = $inputData->type;
         $branch->save();
 
         $response['status'] = true;
@@ -204,67 +203,6 @@ class UserManagementController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
-    }
-
-    public function branchList(Request $request)
-    {
-        if (gettype($request->input) == 'array') {
-            $inputData = (object) $request->input;
-        }
-        else{
-            $inputData = $request->input;
-        }
-        $query = Branch::query();
-
-        if (isset($inputData->userId) && $inputData->userId != null && $inputData->userId != "") {
-            $query = $query->where('user_id',$this->decryptId($inputData->userId));
-        }
-        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
-            $search = $inputData->search;
-            $query = $query->where(function ($function) use($search) {
-                $function->where('name', 'like', '%' . $search . '%');
-                $function->where('district', 'like', '%' . $search . '%');
-                $function->where('user_id', 'like', '%' . $search . '%');
-          });
-        }
-
-        $branchCount = $query->count();
-
-        $branches = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
-
-        $totalArray = [];
-
-        foreach($branches as $branch){
-            $branchList = [];
-
-            $user = User::where('id',$branch->user_id)->first();
-
-            $branchList['id']         = $this->encryptId($branch->id);
-            $branchList['userName']   = $user->name;
-            $branchList['userEmail']  = $user->email;
-            $branchList['userNumber'] = $user->number;
-            $branchList['type']       = $branch->type;
-            $branchList['address1']   = $branch->address_line_1;
-            $branchList['address2']   = $branch->address_line_2;
-            $branchList['pinCode']    = $branch->pin_code;
-            $branchList['district']   = $branch->district;
-            $branchList['state']      = $branch->state;
-            $branchList['number']     = $branch->number;
-            $branchList['latitude']   = $branch->latitude;
-            $branchList['longitude']  = $branch->longitude;
-            $branchList['staffs']     = $branch->staffs;
-
-            array_push($totalArray,(object) $branchList);
-        }
-
-
-         $response['status'] = true;
-         $response["message"] = ['Retrieved Successfully.'];
-         $response['response']["Branch"] = $totalArray;
-         $response['response']["totalBranch"] = $branchCount;
-
-         $encryptedResponse['data'] = $this->encryptData($response);
-         return response($encryptedResponse, 200);
     }
 
     public function userList(Request $request)
