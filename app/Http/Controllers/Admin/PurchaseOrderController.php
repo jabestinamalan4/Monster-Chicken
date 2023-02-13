@@ -42,7 +42,12 @@ class PurchaseOrderController extends Controller
 
         foreach($inputData->productData as $product){
 
+            if(gettype($product) == 'string'){
+                $product = json_decode($product);
+            }
+
             dump($product);
+
             if(isset($product->id) && isset($product->quantity)){
                 $isExist = Product::where('id',$this->decryptId($product->id))->where('status',1)->first();
 
