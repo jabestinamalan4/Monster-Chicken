@@ -303,6 +303,8 @@ class UserManagementController extends Controller
 
             $admin = User::where('id',$user->admin_id)->first();
 
+            $roleName = $user->getRoleNames();
+
             if(isset($admin->id)) {
                 $adminArray = [];
 
@@ -315,6 +317,7 @@ class UserManagementController extends Controller
             $userList['email']  = $user->email;
             $userList['number'] = $user->number;
             $userList['status'] = $user->status;
+            $userList['role']   = $roleName;
 
             array_push($userArray,(object) $userList);
         }
@@ -330,11 +333,40 @@ class UserManagementController extends Controller
 
     public function rolesList(Request $request)
     {
-        $existRoles = Auth::user();
+        $roles = Role::where('name','!=','customer');
 
-        if($existRoles->hasRole('writer')) {
+        $userRoles = auth()->user()->getRoleNames()->toArray();
 
+        if (auth()->user()->hasRole('admin') == true) {
+            $roles = $roles->where('name','!=','admin');
         }
+
+        if (auth()->user()->hasRole('franchise') == true) {
+            $roles = $roles->where('name','!=','franchise');
+        }
+
+        $roles = $roles->get(['name','name AS value']);
+
+        $roleArray = [];
+
+        $rolesList = [];
+
+        foreach($roles as $role) {
+
+            $rolesList['key'] = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',$role['name']))));
+            $rolesList['value'] = $role->value;
+
+            array_push($roleArray,$rolesList);
+        }
+
+        $response['response']['roles'] = $roleArray;
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['responseCode'] = 200;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
     }
 
 }
