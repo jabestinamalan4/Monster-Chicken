@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use CountryState;
+use App\Models\State;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class StateListSeeder extends Seeder
 {
@@ -14,6 +16,16 @@ class StateListSeeder extends Seeder
      */
     public function run()
     {
-        //
+        $states = CountryState::getStates('IN');
+
+        foreach($states as $state){
+
+            $stateData = new State;
+
+            $stateData->state = $state;
+            $stateData->status = 1;
+
+            $stateData->save();
+        }
     }
 }
