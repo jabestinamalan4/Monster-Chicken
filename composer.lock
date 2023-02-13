@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "27b64f0f81c8423bf0588d9a5d94296f",
+    "content-hash": "ef74c16a5652f8bed460153193ff7ace",
     "packages": [
         {
             "name": "brick/math",
@@ -709,6 +709,67 @@
                 }
             ],
             "time": "2022-12-15T16:57:16+00:00"
+        },
+        {
+            "name": "dougsisk/laravel-country-state",
+            "version": "4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DougSisk/laravel-country-state.git",
+                "reference": "2e474adaf7f4560178dd997db40abf2a8c0ff4ca"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DougSisk/laravel-country-state/zipball/2e474adaf7f4560178dd997db40abf2a8c0ff4ca",
+                "reference": "2e474adaf7f4560178dd997db40abf2a8c0ff4ca",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
+                "php": "^7.4|^8.0",
+                "rinvex/countries": "^7.3|^8.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^4.0|^5.0|^6.0|^7.0|^8.0",
+                "phpunit/phpunit": "^8.0|^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "DougSisk\\CountryState\\CountryStateServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "DougSisk\\CountryState\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Doug Sisk",
+                    "homepage": "http://dougsisk.com"
+                }
+            ],
+            "description": "Country & state helper for Laravel.",
+            "homepage": "https://github.com/DougSisk/laravel-country-state",
+            "keywords": [
+                "countries",
+                "country",
+                "laravel",
+                "state",
+                "states"
+            ],
+            "support": {
+                "issues": "https://github.com/DougSisk/laravel-country-state/issues",
+                "source": "https://github.com/DougSisk/laravel-country-state/tree/4.2"
+            },
+            "time": "2023-01-30T22:08:21+00:00"
         },
         {
             "name": "dragonmantank/cron-expression",
@@ -4296,6 +4357,89 @@
                 }
             ],
             "time": "2023-01-12T18:13:24+00:00"
+        },
+        {
+            "name": "rinvex/countries",
+            "version": "v8.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rinvex/countries.git",
+                "reference": "b012697307453e7d9d2df25bd385904b3e2e9baf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rinvex/countries/zipball/b012697307453e7d9d2df25bd385904b3e2e9baf",
+                "reference": "b012697307453e7d9d2df25bd385904b3e2e9baf",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0.0"
+            },
+            "require-dev": {
+                "codedungeon/phpunit-result-printer": "^0.31.0",
+                "phpunit/phpunit": "^9.5.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Rinvex\\Country\\Providers\\CountryServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Rinvex\\Country\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Rinvex LLC",
+                    "email": "help@rinvex.com",
+                    "homepage": "https://rinvex.com"
+                },
+                {
+                    "name": "Abdelrahman Omran",
+                    "email": "me@omranic.com",
+                    "homepage": "https://omranic.com",
+                    "role": "Project Lead"
+                },
+                {
+                    "name": "The Generous PHP Community",
+                    "homepage": "https://github.com/rinvex/countries/contributors"
+                }
+            ],
+            "description": "Rinvex Countries is a simple and lightweight package for retrieving country details with flexibility. A whole bunch of data including name, demonym, capital, iso codes, dialling codes, geo data, currencies, flags, emoji, and other attributes for all 250 countries worldwide at your fingertips.",
+            "homepage": "https://rinvex.com",
+            "keywords": [
+                "Flexible",
+                "Simple",
+                "countries",
+                "country",
+                "currencies",
+                "demonym",
+                "dialling",
+                "emoji",
+                "flags",
+                "geographic",
+                "languages",
+                "rinvex",
+                "svg"
+            ],
+            "support": {
+                "docs": "https://github.com/rinvex/countries/blob/master/README.md",
+                "email": "help@rinvex.com",
+                "issues": "https://github.com/rinvex/countries/issues",
+                "source": "https://github.com/rinvex/countries"
+            },
+            "time": "2022-12-29T20:30:43+00:00"
         },
         {
             "name": "spatie/laravel-permission",
