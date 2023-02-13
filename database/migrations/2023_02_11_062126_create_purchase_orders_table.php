@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->string('note');
+            $table->string('note')->nullable();
             $table->integer('status');
             $table->timestamps();
         });

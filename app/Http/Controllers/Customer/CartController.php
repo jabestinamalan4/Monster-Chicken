@@ -14,6 +14,7 @@ use App\Models\ShippingDetail;
 use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -101,6 +102,12 @@ class CartController extends Controller
         }
         else{
             $inputData = $request->input;
+        }
+
+        if (Auth::guard('api')->check() == false) {
+            $response = ['status' => false, "message"=> ['Please Login and try again.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
         }
 
         $inputUser = $request->user;

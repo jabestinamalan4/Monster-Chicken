@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
+use App\Http\Traits\HelperTrait;
+use App\Models\PurchaseOrderItem;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class PurchaseOrderController extends Controller
 {
+    use HelperTrait;
+
     public function store(Request $request)
     {
         if (gettype($request->input) == 'array') {
@@ -34,7 +40,11 @@ class PurchaseOrderController extends Controller
         $productArray = [];
         $orderData = [];
 
-        foreach($productData as $product){
+        foreach($inputData->productData as $product){
+
+            if(gettype($product) == 'string'){
+                $product = json_decode($product);
+            }
 
             if(isset($product->id) && isset($product->quantity)){
                 $isExist = Product::where('id',$this->decryptId($product->id))->where('status',1)->first();
@@ -85,7 +95,40 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->save();
 
         if(isset($inputData->purchaseId) && $inputData->purchaseId != null && $inputData->purchaseId != ""){
-            $purchaseItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
+            $missedItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->whereNotIn('product_id',$productArray)->get();
         }
+
+        foreach($orderData as $item){
+            $orderItem = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->where('product_id',$item->id)->first();
+
+            if(isset($orderItem->id)){
+                $itemData = $orderItem;
+            }
+            else{
+                $itemData = new PurchaseOrderItem;
+
+                $itemData->purchase_order_id = $purchaseOrder->id;
+                $itemData->product_id = $item->id;
+                $itemData->status = 1;
+            }
+
+            $itemData->quantity = $item->quantity;
+
+            $itemData->save();
+        }
+
+        if(isset($missedItems) && count($missedItems) != 0){
+
+            foreach($missedItems as $delete){
+                $delete->delete();
+            }
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
     }
 }

@@ -50,7 +50,7 @@ class ProductController extends Controller
         }
 
         if (isset($inputData->productId)) {
-            $isExist = Product::find($inputData->productId);
+            $isExist = Product::find($this->decryptId($inputData->productId));
             if (isset($isExist->id)) {
                 $product = $isExist;
             }
@@ -111,7 +111,7 @@ class ProductController extends Controller
         }
 
         if (isset($inputData->categoryId)) {
-            $isExist = ProductCategory::find($inputData->categoryId);
+            $isExist = ProductCategory::find($this->decryptId($inputData->categoryId));
             if (isset($isExist->id)) {
                 $category = $isExist;
             }
@@ -237,6 +237,7 @@ class ProductController extends Controller
          return response($encryptedResponse, 200);
 
     }
+
     public function categoryList(Request $request)
     {
         if (gettype($request->input) == 'array') {
@@ -290,7 +291,8 @@ class ProductController extends Controller
 
     }
 
-    public function changeCategoryStatus(Request $request){
+    public function changeCategoryStatus(Request $request)
+    {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
         }
