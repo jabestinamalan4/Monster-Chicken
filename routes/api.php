@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\General\FileController;
 use App\Http\Controllers\Customer\AuthController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\UserController;
@@ -56,6 +55,6 @@ Route::group(['middleware'=>['decrypt','deviceMap','location']], function(){
     Route::post('cart/checkout', [CartController::class,'cartCheckout']);
     Route::post('checkout/data', [CartController::class,'getCheckoutData']);
 
-    Route::get('state/list', [CartController::class,'stateList']);
+    Route::post('state/list', [CartController::class,'stateList']);
 
 });

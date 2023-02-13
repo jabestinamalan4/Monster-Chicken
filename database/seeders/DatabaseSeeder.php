@@ -6,6 +6,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Database\Seeders\AdminSeeder;
 use Database\Seeders\RolesSeeder;
+use Database\Seeders\Rolesseeder2;
+use Database\Seeders\StateListSeeder;
 use Database\Seeders\PermissionsSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -26,6 +28,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call(PermissionsSeeder::class);
         $this->call(RolesSeeder::class);
+        $this->call(Rolesseeder2::class);
+        $this->call(StateListSeeder::class);
         $this->call(AdminSeeder::class);
         $this->call(EmailTemplateSeeder::class);
     }

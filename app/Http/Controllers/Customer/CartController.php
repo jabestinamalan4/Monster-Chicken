@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Cart;
 use App\Models\User;
 use App\Models\Order;
+use App\Models\State;
 use App\Models\Product;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
@@ -428,7 +429,41 @@ class CartController extends Controller
 
     public function stateList(Request $request)
     {
-        
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $query = State::where('status',1);
+
+        if(isset($inputData->search) && $inputData->search != null && $inputData->search != ""){
+            $search = $inputData->search;
+            $query  = $query->where(function ($function) use($search) {
+                $function->Where('state', 'like', '%' . $search . '%');
+            });
+        }
+
+        $states = $query->orderBy('state','ASC')->get();
+        $stateArray = [];
+
+        foreach($states as $state){
+            $stateDetail = [];
+
+            $stateDetail['name'] = $state->state;
+            $stateDetail['value'] = $state->id;
+
+            array_push($stateArray,(object) $stateDetail);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Saved successfully.'];
+        $response['responseCode'] = 200;
+        $response['response']["states"] = $stateArray;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
     }
 
 }
