@@ -57,6 +57,8 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('price/list', [PriceController::class, 'priceList'])->middleware(['role:admin','auth:api']);
 
+    Route::post('file/upload', [FileController::class,'upload']);
+
     Route::get('role/list', [UserManagementController::class, 'rolesList'])->middleware(['role:admin|franchise','auth:api']);
 
 });
