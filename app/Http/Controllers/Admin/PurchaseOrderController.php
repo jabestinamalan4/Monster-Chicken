@@ -40,7 +40,7 @@ class PurchaseOrderController extends Controller
         $productArray = [];
         $orderData = [];
 
-        foreach($productData as $product){
+        foreach($inputData->productData as $product){
 
             if(isset($product->id) && isset($product->quantity)){
                 $isExist = Product::where('id',$this->decryptId($product->id))->where('status',1)->first();
