@@ -10,6 +10,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Jobs\SendEmailJob;
 use App\Http\Traits\HelperTrait;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class UserManagementController extends Controller
@@ -295,7 +297,7 @@ class UserManagementController extends Controller
                 $adminarr = [];
 
                 $adminarr['name'] = $admin->name;
-                $adminarr['email'] = $admin->name;
+                $adminarr['email'] = $admin->email;
 
                 array_push($adminList,$adminarr);
             }
@@ -318,5 +320,13 @@ class UserManagementController extends Controller
          return response($encryptedResponse, 200);
     }
 
+    public function rolesList(Request $request)
+    {
+        $existRoles = Auth::user();
+
+        if($existRoles-hasRole('writer')) {
+
+        }
+    }
 
 }

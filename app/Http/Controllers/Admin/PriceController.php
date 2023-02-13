@@ -93,13 +93,12 @@ class PriceController extends Controller
 
         $prices = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
-        $totalArr = [];
+        $totalArr     = [];
+        $priceList    = [];
+        $productList  = [];
+        $imageList    = [];
 
         foreach($prices as $price){
-            $priceList    = [];
-            $productList  = [];
-            $imageList    = [];
-
             $product = Product::where('id',$price->product_id)->first();
             if(isset($product)) {
                 $products     = [];

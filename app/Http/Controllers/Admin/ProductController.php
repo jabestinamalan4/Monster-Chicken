@@ -196,13 +196,13 @@ class ProductController extends Controller
         }
         $productCount = $query->count();
 
-        $produts = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+        $products = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
-        $totalArray = [];
+        $totalArray   = [];
+        $productsList = [];
+        $imageList    = [];
+        foreach($products as $product){
 
-        foreach($produts as $product){
-            $productsList = [];
-            $imageList    = [];
 
             $category = ProductCategory::where('id',$product->category)->first();
 
