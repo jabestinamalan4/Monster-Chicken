@@ -25,7 +25,7 @@ class ProductController extends Controller
         }
 
         $rulesArray = [
-                        'category' => 'required|integer',
+                        'category' => 'required',
                         'productName' => 'required',
                         'description' => 'required',
                         'imageUrl' => 'required',
@@ -41,7 +41,7 @@ class ProductController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $isExist = ProductCategory::where('id',$inputData->category)->where('status',1)->first();
+        $isExist = ProductCategory::where('id',$this->decryptId($inputData->category))->where('status',1)->first();
 
         if (!isset($isExist->id)) {
             $response = ['status' => false, "message"=> ['Invalid Category'], "responseCode" => 422];
