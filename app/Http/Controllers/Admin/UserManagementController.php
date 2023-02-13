@@ -281,6 +281,10 @@ class UserManagementController extends Controller
           });
         }
 
+        $query = $query->whereNotNull('email');
+
+        $query = $query->whereNotNull('name');
+
         $userCount = $query->count();
 
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
@@ -299,13 +303,14 @@ class UserManagementController extends Controller
                 $adminarr['name'] = $admin->name;
                 $adminarr['email'] = $admin->email;
 
-                array_push($adminList,$adminarr);
+                array_push($adminList,(object) $adminarr);
             }
 
             $userList['id']     = $this->encryptId($user->id);
             $userList['name']   = $user->name;
             $userList['email']  = $user->email;
             $userList['number'] = $user->number;
+            $userList['status'] = $user->status;
             $userList['admin']  = $adminList;
 
             array_push($totalArray,(object) $userList);
@@ -324,7 +329,7 @@ class UserManagementController extends Controller
     {
         $existRoles = Auth::user();
 
-        if($existRoles-hasRole('writer')) {
+        if($existRoles->hasRole('writer')) {
 
         }
     }

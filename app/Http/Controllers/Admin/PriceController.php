@@ -131,7 +131,7 @@ class PriceController extends Controller
         $response['status'] = true;
          $response["message"] = ['Retrieved Successfully.'];
          $response['response']["price"] = $totalArr;
-         $response['response']["totalprice"] = $priceCount;
+         $response['response']["totalPrice"] = $priceCount;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);

@@ -109,6 +109,7 @@ class ProductController extends Controller
             }
 
             $productDetail['imageUrl'] = $imageArray;
+            $productDetail['status'] = $product->status;
 
             array_push($productArray,(object) $productDetail);
         }
@@ -205,6 +206,7 @@ class ProductController extends Controller
         }
 
         $productDetail['imageUrl'] = $imageArray;
+        $productDetail['status'] = $product->status;
 
         $response['status'] = true;
         $response["message"] = ['Retrieved successfully.'];
@@ -334,6 +336,7 @@ class ProductController extends Controller
             $listDetail['price'] = $list->product->price;
             $listDetail['rating'] = $list->product->rating;
             $listDetail['reviews'] = $list->product->reviews;
+            $listDetail['status'] = $list->status;
 
             array_push($listArray,(object) $listDetail);
         }
@@ -370,6 +373,7 @@ class ProductController extends Controller
 
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;
+            $categoryDetail['status'] = $category->status;
 
             array_push($categoryArray,(object) $categoryDetail);
         }

@@ -127,7 +127,7 @@ class VendorController extends Controller
                 $productCat['id']       = isset($category->id) ? $this->encryptId($category->id) :"";
                 $productCat['category'] = isset($category->category) ? $category->category : "";
 
-                array_push($categoryList,$productCat);
+                array_push($categoryList,(object) $productCat);
             }
 
             $vendorList['id']         = $this->encryptId($vendor->id);

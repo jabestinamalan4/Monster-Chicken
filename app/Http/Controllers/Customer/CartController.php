@@ -286,6 +286,7 @@ class CartController extends Controller
             $cartDetail['reviews'] = $cart->product->reviews;
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
             $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
+            $cartDetail['status'] = $cart->status;
 
             array_push($cartArray,(object) $cartDetail);
         }
@@ -347,6 +348,7 @@ class CartController extends Controller
                     $suggestionArray['city'] = $suggestion->city;
                     $suggestionArray['pin'] = $suggestion->pin;
                     $suggestionArray['address'] = $suggestion->address;
+                    $suggestionArray['status'] = $suggestion->status;
 
                     array_push($checkoutSuggestionArray,(object) $suggestionArray);
                 }
@@ -395,8 +397,9 @@ class CartController extends Controller
                         $cartDetail['reviews'] = $cart->product->reviews;
                         $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
                         $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
+                        $cartDetail['status'] = $cart->status;
 
-                        array_push($cartArray,$cartDetail);
+                        array_push($cartArray,(object) $cartDetail);
                     }
                     else{
                         $response = ['status' => false, "message"=> ['Invalid Cart ID.'], "responseCode" => 422];

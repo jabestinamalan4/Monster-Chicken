@@ -46,6 +46,7 @@ class UserController extends Controller
             else{
                 $categoryDetail['selected'] = false;
             }
+            $categoryDetail['status'] = $category->status;
 
             array_push($categoryArray,(object) $categoryDetail);
         }
@@ -85,6 +86,7 @@ class UserController extends Controller
             }
 
             $productDetail['imageUrl'] = $imageArray;
+            $productDetail['status'] = $product->status;
 
             array_push($productArray,(object) $productDetail);
         }

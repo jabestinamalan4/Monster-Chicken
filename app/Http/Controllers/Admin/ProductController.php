@@ -160,6 +160,7 @@ class ProductController extends Controller
             $categoryDetail['categoryId'] = $this->encryptId($category->id);
             $categoryDetail['categoryName'] = $category->category;
             $categoryDetail['imageUrl'] = Storage::disk('public')->url('document/'.$category->image_url);
+            $categoryDetail['status'] = $category->status;
 
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;
@@ -271,6 +272,7 @@ class ProductController extends Controller
             $categoryDetail['categoryId'] = $this->encryptId($category->id);
             $categoryDetail['categoryName'] = $category->category;
             $categoryDetail['imageUrl'] = Storage::disk('public')->url('document/'.$category->image_url);
+            $categoryDetail['status'] = $category->status;
 
             $productCount = Product::where('status',1)->where('category',$category->id)->count();
             $categoryDetail['productCount'] = $productCount;

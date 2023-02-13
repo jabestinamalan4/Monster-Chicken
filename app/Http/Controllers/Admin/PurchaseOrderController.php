@@ -45,7 +45,7 @@ class PurchaseOrderController extends Controller
                     $productDetail['id'] = $isExist->id;
                     $productDetail['quantity'] = $product->quantity;
 
-                    array_push($productArray,$isExist->id);
+                    array_push($productArray,(object) $isExist->id);
 
                     array_push($orderData,(object) $productDetail);
                 }
