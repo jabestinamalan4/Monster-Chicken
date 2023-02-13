@@ -28,7 +28,7 @@ class ProductController extends Controller
                         'category' => 'required',
                         'productName' => 'required',
                         'description' => 'required',
-                        'imageUrl' => 'required',
+                        'imageUrl' => 'required|array',
                         'price' => 'required',
                         'discountPrice' => 'required',
                     ];
@@ -201,13 +201,15 @@ class ProductController extends Controller
 
         $totalArray   = [];
         $productsList = [];
-        $imageList    = [];
+
         foreach($products as $product){
 
+            $imageList    = [];
 
             $category = ProductCategory::where('id',$product->category)->first();
 
             $productsList['id']             = $this->encryptId($product->id);
+            $productsList['categoryId']     = $product->category;
             $productsList['category']       = isset($category) && ($category!=null || $category!="" ) ? $category->category:"";
             $productsList['name']           = $product->name;
             $productsList['description']    = $product->description;
@@ -215,10 +217,15 @@ class ProductController extends Controller
             $productsList['discountPrice']  = $product->discount_price;
             $productsList['rating']         = $product->rating;
             $productsList['reviews']        = $product->reviews;
+            $productsList['updatedAt']      = $product->updated_at;
             $productsList['status']         = $product->status;
 
-            foreach((array)json_decode($product->image_url) as $image_url){
-                array_push($imageList,Storage::disk('public')->url('document/'.$image_url));
+            foreach((array)json_decode($product->image_url) as $imageUrl){
+                $imageData = [];
+
+                $imageData['fileName'] = $imageUrl;
+                $imageData['previewUrl'] = Storage::disk('public')->url('document/'.$imageUrl);
+                array_push($imageList,$imageData);
             }
 
             $productsList['imageUrl']       = $imageList;
