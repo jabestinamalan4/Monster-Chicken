@@ -44,15 +44,12 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus'])->middleware(['role:admin','auth:api']);
     Route::post('product/change-status', [ProductController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
-    Route::post('add-user', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
-    Route::post('user-list', [UserManagementController::class, 'userList'])->middleware(['role:admin','auth:api']);
+    Route::post('user/store', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('user/list', [UserManagementController::class, 'userList'])->middleware(['role:admin','auth:api']);
 
     Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
-    Route::post('add-branch', [UserManagementController::class, 'storeBranch'])->middleware(['role:admin','auth:api']);
-    Route::post('branch-list', [UserManagementController::class, 'branchList'])->middleware(['role:admin','auth:api']);
-
-    Route::post('vendor/add-vendor', [VendorController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('vendor/store', [VendorController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('vendor/list', [VendorController::class, 'vendorList'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
@@ -60,6 +57,6 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('price/list', [PriceController::class, 'priceList'])->middleware(['role:admin','auth:api']);
 
-    Route::get('get-role-list', [UserManagementController::class, 'rolesList'])->middleware(['role:admin|franchise','auth:api']);
+    Route::get('role/list', [UserManagementController::class, 'rolesList'])->middleware(['role:admin|franchise','auth:api']);
 
 });

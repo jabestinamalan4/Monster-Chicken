@@ -296,21 +296,18 @@ class UserManagementController extends Controller
 
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
-        $totalArray = [];
+        $userArray = [];
 
         foreach($users as $user){
             $userList   = [];
-            $adminList  = [];
 
             $admin = User::where('id',$user->admin_id)->first();
 
-            if(isset($admin)) {
-                $adminarr = [];
+            if(isset($admin->id)) {
+                $adminArray = [];
 
-                $adminarr['name'] = $admin->name;
-                $adminarr['email'] = $admin->email;
-
-                array_push($adminList,(object) $adminarr);
+                $adminArray['adminName'] = $admin->name;
+                $adminArray['adminEmail'] = $admin->email;
             }
 
             $userList['id']     = $this->encryptId($user->id);
@@ -318,18 +315,17 @@ class UserManagementController extends Controller
             $userList['email']  = $user->email;
             $userList['number'] = $user->number;
             $userList['status'] = $user->status;
-            $userList['admin']  = $adminList;
 
-            array_push($totalArray,(object) $userList);
+            array_push($userArray,(object) $userList);
         }
 
         $response['status'] = true;
-         $response["message"] = ['Retrieved Successfully.'];
-         $response['response']["user"] = $totalArray;
-         $response['response']["totaLUser"] = $userCount;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["user"] = $userArray;
+        $response['response']["totalUser"] = $userCount;
 
-         $encryptedResponse['data'] = $this->encryptData($response);
-         return response($encryptedResponse, 200);
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
     }
 
     public function rolesList(Request $request)
