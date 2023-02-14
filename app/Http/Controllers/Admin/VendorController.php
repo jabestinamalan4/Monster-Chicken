@@ -64,7 +64,7 @@ class VendorController extends Controller
         $vendor->district      = $inputData->district;
         $vendor->state         = $inputData->state;
         $vendor->number        = $inputData->number;
-        $vendor->email_id      = $inputData->emailId;
+        $vendor->email         = $inputData->emailId;
         $vendor->contact_name  = $inputData->contactName;
         $vendor->latitude      = $inputData->latitude;
         $vendor->longitude     = $inputData->longitude;
@@ -131,14 +131,14 @@ class VendorController extends Controller
             }
 
             $vendorList['id']         = $this->encryptId($vendor->id);
-            $vendorList['type']       = $categoryList;
+            $vendorList['category']   = $categoryList;
             $vendorList['name']       = $vendor->name;
             $vendorList['address']    = $vendor->address;
             $vendorList['pinCode']    = $vendor->pin_code;
             $vendorList['district']   = $vendor->district;
             $vendorList['state']      = $vendor->state;
             $vendorList['number']     = $vendor->number;
-            $vendorList['emailId']    = $vendor->email_id;
+            $vendorList['email']      = $vendor->email;
             $vendorList['contactName']= $vendor->contact_name;
             $vendorList['latitude']   = $vendor->latitude;
             $vendorList['longitude']  = $vendor->longitude;
@@ -150,8 +150,64 @@ class VendorController extends Controller
 
          $response['status'] = true;
          $response["message"] = ['Retrieved Successfully.'];
-         $response['response']["Vendor"] = $totalArray;
+         $response['response']["vendors"] = $totalArray;
          $response['response']["totalVendor"] = $vendorCount;
+
+         $encryptedResponse['data'] = $this->encryptData($response);
+         return response($encryptedResponse, 200);
+    }
+
+    public function getVendors(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+        $query = Vendor::query();
+
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+            $query  = $query->where(function ($function) use($search) {
+                $function->Where('name', 'like', '%' . $search . '%');
+                $function->orWhere('email', 'like', '%' . $search . '%');
+          });
+        }
+
+        $vendors = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
+        $vendorsArray  = [];
+
+
+        foreach($vendors as $vendor){
+            $categoryArray = [];
+            $vendorList    = [];
+            $categoryList  = [];
+
+            foreach(json_decode($vendor->type) as $category) {
+
+                $categoryName = ProductCategory::where('id',$category)->first();
+
+                $categoryList['id']   = $this->encryptId($categoryName->id);
+                $categoryList['name'] = $categoryName->category;
+
+                array_push($categoryArray,$categoryList);
+            }
+            $vendorList['id']         = $this->encryptId($vendor->id);
+            $vendorList['categories'] = $categoryArray;
+            $vendorList['name']       = $vendor->name;
+            $vendorList['number']     = $vendor->number;
+            $vendorList['email']      = $vendor->email;
+
+            array_push($vendorsArray,(object) $vendorList);
+        }
+
+
+         $response['status'] = true;
+         $response["message"] = ['Retrieved Successfully.'];
+         $response['response']["vendors"] = $vendorsArray;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);

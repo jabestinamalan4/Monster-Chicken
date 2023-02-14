@@ -171,7 +171,6 @@ class UserManagementController extends Controller
 
     public function storeBranch($inputData,$userId)
     {
-
         if (isset($inputData->branchId)) {
             $branch = Branch::where('id',$this->decryptId($inputData->branchId))->first();
 
@@ -186,7 +185,6 @@ class UserManagementController extends Controller
         }
         $branch->address_line_1   = $inputData->address1;
         $branch->address_line_2   = $inputData->address2;
-
         $branch->pin_code         = $inputData->pinCode;
         $branch->district         = $inputData->district;
         $branch->latitude         = $inputData->latitude;
@@ -194,7 +192,7 @@ class UserManagementController extends Controller
         $branch->staffs           = $inputData->staffs;
         $branch->state            = $inputData->state;
         $branch->number           = $inputData->number;
-        $branch->user_id          = $this->decryptId($inputData->userId);
+        $branch->user_id          = $userId;
         $branch->save();
 
         $response['status'] = true;
@@ -234,14 +232,17 @@ class UserManagementController extends Controller
 
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
-        $userArray = [];
+        $userArray  = [];
+
 
         foreach($users as $user){
             $userList   = [];
+            $rolesList  = [];
+            $rolesArray = [];
 
             $admin = User::where('id',$user->admin_id)->first();
 
-            $roleName = $user->getRoleNames();
+            $rolesName = $user->getRoleNames()->toArray();
 
             if(isset($admin->id)) {
                 $adminArray = [];
@@ -255,7 +256,13 @@ class UserManagementController extends Controller
             $userList['email']  = $user->email;
             $userList['number'] = $user->number;
             $userList['status'] = $user->status;
-            $userList['role']   = $roleName;
+
+            $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+            $rolesList['value'] = implode(" ",$rolesName);
+
+            array_push($rolesArray,$rolesList);
+
+            $userList['role']   = $rolesArray;
 
             array_push($userArray,(object) $userList);
         }
@@ -307,4 +314,64 @@ class UserManagementController extends Controller
         return response($encryptedResponse, 200);
     }
 
+    public function getUsers(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $query = User::query();
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+            $query  = $query->where(function ($function) use($search) {
+                $function->Where('name', 'like', '%' . $search . '%');
+          });
+        }
+
+        $query = $query->whereNotNull('email');
+
+        $query = $query->where('status',1);
+
+        $query = $query->whereNotNull('name');
+
+        $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
+        $usersArray = [];
+
+        foreach($users as $user){
+            $userList   = [];
+            $rolesList  = [];
+            $rolesArray = [];
+
+            $admin = User::where('id',$user->admin_id)->first();
+
+            $rolesName = $user->getRoleNames()->toArray();
+
+            $userList['id']     = $this->encryptId($user->id);
+            $userList['name']   = $user->name;
+            $userList['email']  = $user->email;
+            $userList['number'] = $user->number;
+            $userList['status'] = $user->status;
+
+            $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+            $rolesList['value'] = implode(" ",$rolesName);
+
+            array_push($rolesArray,$rolesList);
+
+            $userList['role']   = $rolesArray;
+
+            array_push($usersArray,(object) $userList);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["users"] = $usersArray;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
 }

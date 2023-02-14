@@ -210,7 +210,7 @@ class ProductController extends Controller
 
             $productsList['id']             = $this->encryptId($product->id);
             $productsList['categoryId']     = $product->category;
-            $productsList['category']       = isset($category) && ($category!=null || $category!="" ) ? $category->category:"";
+            $productsList['category']       = isset($category->id) ? $category->category:"";
             $productsList['name']           = $product->name;
             $productsList['description']    = $product->description;
             $productsList['price']          = $product->price;
@@ -403,6 +403,52 @@ class ProductController extends Controller
         $response['status'] = true;
         $response["message"] = ['Status Updated Successfully.'];
         $response['responseCode'] = 200;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function getProducts(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $query = Product::query();
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+            $query = $query->where(function ($function) use($search) {
+                $function->where('name', 'like', '%' . $search . '%');
+          });
+        }
+
+        $query    = $query->where('status',1);
+
+        $products = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
+        $productsArray = [];
+
+        foreach($products as $product){
+            $productsList = [];
+
+            $category = ProductCategory::where('id',$product->category)->first();
+
+            $productsList['id']             = $this->encryptId($product->id);
+            $productsList['categoryId']     = $this->encryptId($product->category);
+            $productsList['category']       = isset($category->id) ? $category->category:"";
+            $productsList['name']           = $product->name;
+            $productsList['status']         = $product->status;
+
+            array_push($productsArray,(object)$productsList);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["products"] = $productsArray;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);

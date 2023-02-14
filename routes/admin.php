@@ -43,19 +43,22 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('product/category-change-status', [ProductController::class, 'changeCategoryStatus'])->middleware(['role:admin','auth:api']);
     Route::post('product/change-status', [ProductController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
+    Route::post('product/get-products', [ProductController::class, 'getProducts'])->middleware(['role:admin','auth:api']);
+
 
     Route::post('user/store', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('user/list', [UserManagementController::class, 'userList'])->middleware(['role:admin','auth:api']);
+    Route::post('user/get-users', [UserManagementController::class, 'getUsers'])->middleware(['role:admin','auth:api']);
 
     Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
     Route::post('vendor/store', [VendorController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('vendor/list', [VendorController::class, 'vendorList'])->middleware(['role:admin','auth:api']);
+    Route::post('vendor/get-vendors', [VendorController::class, 'getVendors'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
 
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
-    Route::post('price/list', [PriceController::class, 'priceList'])->middleware(['role:admin','auth:api']);
 
     Route::post('file/upload', [FileController::class,'upload']);
 
