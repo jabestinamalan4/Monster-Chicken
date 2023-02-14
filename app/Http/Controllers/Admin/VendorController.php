@@ -31,7 +31,7 @@ class VendorController extends Controller
                         'district' => 'required',
                         'state' => 'required',
                         'number' => 'required|numeric|digits_between:10,15',
-                        'emailId' => 'required|email',
+                        'email' => 'required|email',
                         'contactName' => 'required',
                         'latitude' =>'required|numeric|between:0,99.99',
                         'longitude' => 'required|numeric|between:0,99.99',
@@ -75,7 +75,7 @@ class VendorController extends Controller
         $vendor->district      = $inputData->district;
         $vendor->state         = $inputData->state;
         $vendor->number        = $inputData->number;
-        $vendor->email         = $inputData->emailId;
+        $vendor->email         = $inputData->email;
         $vendor->contact_name  = $inputData->contactName;
         $vendor->latitude      = $inputData->latitude;
         $vendor->longitude     = $inputData->longitude;
