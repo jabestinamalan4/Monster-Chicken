@@ -453,4 +453,74 @@ class ProductController extends Controller
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
     }
+
+    public function productDetails(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $inputUser = $request->user;
+
+        $rulesArray = [
+                        'productId' => 'required'
+                    ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $productId = $this->decryptId($inputData->productId);
+
+        $product = Product::where('status',1)->where('id',$productId)->first();
+
+        if (!isset($product->id)) {
+            $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $productDetail = [];
+
+        $productDetail['productId'] = $this->encryptId($product->id);
+        $productDetail['productName'] = $product->name;
+
+        $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
+        if (isset($category->category)) {
+            $productDetail['categoryName'] = $category->category;
+            $productDetail['categoryId'] = $category->id;
+        }
+
+        $productDetail['price'] = $product->price;
+        $productDetail['discountPrice'] = $product->discount_price;
+        $productDetail['description'] = $product->description;
+        $productDetail['rating'] = $product->rating;
+        $productDetail['reviews'] = $product->reviews;
+
+        $imageArray = [];
+
+        foreach(json_decode($product->image_url) as $image){
+            $imageUrl = Storage::disk('public')->url('document/'.$image);
+
+            array_push($imageArray,$imageUrl);
+        }
+
+        $productDetail['imageUrl'] = $imageArray;
+        $productDetail['status'] = $product->status;
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved successfully.'];
+        $response['responseCode'] = 200;
+        $response['response']['productDetail'] = $productDetail;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
 }
