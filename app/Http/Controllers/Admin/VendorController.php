@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Vendor;
+use App\Models\State;
 use App\Models\ProductCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -53,6 +54,17 @@ class VendorController extends Controller
                 return response($encryptedResponse, 400);
             }
         }
+
+        if (isset($inputData->state)) {
+            $state = State::where('id',$inputData->state)->first();
+
+            if(!isset($state->id)){
+                $response = ['status' => false, "message"=>"This state is does not exist", "responseCode" => 422];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
+
         else{
             $vendor = new Vendor;
         }
@@ -116,27 +128,41 @@ class VendorController extends Controller
         $totalArray = [];
 
         foreach($vendors as $vendor){
-            $vendorList = [];
+            $stateArray    = [];
+            $vendorList   = [];
             $categoryList = [];
+            $stateList    = [];
+
             $types =json_decode($vendor->type);
+
             foreach((array)$types as $type) {
                 $productCat = [];
 
                 $category = ProductCategory::where('id',$type)->first();
 
                 $productCat['id']       = isset($category->id) ? $this->encryptId($category->id) :"";
-                $productCat['category'] = isset($category->category) ? $category->category : "";
+                $productCat['name'] = isset($category->category) ? $category->category : "";
 
                 array_push($categoryList,(object) $productCat);
             }
 
+            if(isset($vendor->state)) {
+
+                $stateName = State::where('id',$vendor->state)->first();
+
+                $stateList['id']   = $this->encryptId($stateName->id);
+                $stateList['name'] = $stateName->state;
+
+                array_push($stateArray,(object) $stateList);
+            }
+
             $vendorList['id']         = $this->encryptId($vendor->id);
-            $vendorList['category']   = $categoryList;
+            $vendorList['categories'] = $categoryList;
             $vendorList['name']       = $vendor->name;
             $vendorList['address']    = $vendor->address;
             $vendorList['pinCode']    = $vendor->pin_code;
             $vendorList['district']   = $vendor->district;
-            $vendorList['state']      = $vendor->state;
+            $vendorList['state']      = $stateArray;
             $vendorList['number']     = $vendor->number;
             $vendorList['email']      = $vendor->email;
             $vendorList['contactName']= $vendor->contact_name;
@@ -211,5 +237,51 @@ class VendorController extends Controller
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);
+    }
+
+    public function changeStatus(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [ 'vendorId' => 'required' ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $vendorDetails = Vendor::where('id',$this->decryptId($inputData->vendorId))->first();
+
+        if(isset($vendorDetails->id)){
+
+            if($vendorDetails->status==1){
+                $vendorDetails->status = 0;
+            }else{
+                $vendorDetails->status = 1;
+            }
+
+            $vendorDetails->save();
+        }
+        else{
+            $response = ['status' => false, "message"=>"Invalid Vendor Id", "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Status Updated Successfully.'];
+        $response['responseCode'] = 200;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+
     }
 }
