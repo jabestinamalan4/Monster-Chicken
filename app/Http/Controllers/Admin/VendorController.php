@@ -45,16 +45,6 @@ class VendorController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        if (isset($inputData->vendorId)) {
-            $vendor = Vendor::where('id',$this->decryptId($inputData->vendorId))->first();
-
-            if(!isset($vendor->id)){
-                $response = ['status' => false, "message"=>"This vendor is does not exist", "responseCode" => 422];
-                $encryptedResponse['data'] = $this->encryptData($response);
-                return response($encryptedResponse, 400);
-            }
-        }
-
         if (isset($inputData->state)) {
             $state = State::where('id',$inputData->state)->first();
 
@@ -65,6 +55,15 @@ class VendorController extends Controller
             }
         }
 
+        if (isset($inputData->vendorId)) {
+            $vendor = Vendor::where('id',$this->decryptId($inputData->vendorId))->first();
+
+            if(!isset($vendor->id)){
+                $response = ['status' => false, "message"=>"This vendor is does not exist", "responseCode" => 422];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
         else{
             $vendor = new Vendor;
         }
