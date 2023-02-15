@@ -463,8 +463,6 @@ class ProductController extends Controller
             $inputData = $request->input;
         }
 
-        $inputUser = $request->user;
-
         $rulesArray = [
                         'productId' => 'required'
                     ];
@@ -477,9 +475,7 @@ class ProductController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $productId = $this->decryptId($inputData->productId);
-
-        $product = Product::where('status',1)->where('id',$productId)->first();
+        $product = Product::where('status',1)->where('id',$this->decryptId($inputData->productId))->first();
 
         if (!isset($product->id)) {
             $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];
@@ -494,8 +490,8 @@ class ProductController extends Controller
 
         $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
         if (isset($category->category)) {
-            $productDetail['categoryName'] = $category->category;
             $productDetail['categoryId'] = $category->id;
+            $productDetail['categoryName'] = $category->category;
         }
 
         $productDetail['price'] = $product->price;

@@ -37,6 +37,11 @@ class UserManagementController extends Controller
                         'role' => 'required',
                     ];
 
+        if(isset($inputData->userId) && ($inputData->userId!=null || $inputData->userId!="")) {
+            $rulesArray['email'] = 'required|unique:users,email,' . $this->decryptId($inputData->userId);
+            $rulesArray['number'] = 'required|unique:users,number,' . $this->decryptId($inputData->userId);
+        }
+
         if(isset($inputData->role) && ($inputData->role=='cuttingCenter' || $inputData->role=='retailer')){
             $rulesArray['address1']= 'required';
             $rulesArray['address2']= 'required';
@@ -72,7 +77,7 @@ class UserManagementController extends Controller
             }
         }
 
-        if (isset($inputData->userId)) {
+        if (isset($inputData->userId) && ($inputData->userId!="" || $inputData->userId!=null)) {
             $user = User::where('id',$this->decryptId($inputData->userId))->first();
 
             if(!isset($user->id)){
@@ -248,9 +253,11 @@ class UserManagementController extends Controller
 
 
         foreach($users as $user){
+            $branchArray= [];
             $userList   = [];
             $rolesList  = [];
             $rolesArray = [];
+            $branchList = [];
 
             $admin = User::where('id',$user->admin_id)->first();
 
@@ -268,13 +275,34 @@ class UserManagementController extends Controller
             $userList['email']  = $user->email;
             $userList['number'] = $user->number;
             $userList['status'] = $user->status;
-
             $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
             $rolesList['value'] = implode(" ",$rolesName);
 
             array_push($rolesArray,$rolesList);
 
             $userList['role']   = $rolesArray;
+
+            foreach($rolesName as $role)
+            {
+                if($role=="cuttingCenter" || $role=="retailer") {
+
+                    $branch = Branch::where('user_id',$user->id)->first();
+
+                    $branchList['address1'] = isset($branch->address_line_1) ? $branch->address_line_1 : "";
+                    $branchList['address2'] = isset($branch->address_line_2) ? $branch->address_line_2 : "";
+                    $branchList['pinCode']  = isset($branch->pin_code) ? $branch->pin_code : "";
+                    $branchList['district'] = isset($branch->district) ? $branch->district : "";
+                    $branchList['state']    = isset($branch->state) ? $branch->state : "";
+                    $branchList['number']   = isset($branch->number) ? $branch->number : "";
+                    $branchList['latitude'] = isset($branch->latitude) ? $branch->latitude : "";
+                    $branchList['latitude'] = isset($branch->longitude) ? $branch->longitude : "";
+                    $branchList['staffs']   = isset($branch->staffs) ? $branch->staffs : "";
+
+                    array_push($branchArray,$branchList);
+                }
+            }
+
+            $userList['branch'] = $branchArray;
 
             array_push($userArray,(object) $userList);
         }
@@ -385,5 +413,32 @@ class UserManagementController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+
+    public function profile(Request $request)
+    {
+        $userDetails = Auth()->user();
+
+        if (isset($userDetails->id)) {
+            $userDetail = [];
+
+            $userDetail['name'] = isset(Auth()->user()->name) ? Auth()->user()->name : "";
+            $userDetail['email'] = isset(Auth()->user()->email) ? Auth()->user()->email: "";
+            $userDetail['number'] = isset(Auth()->user()->number) ? Auth()->user()->number : "";
+
+            $response['status'] = true;
+            $response["message"] = ['Retrieved successfully.'];
+            $response['responseCode'] = 200;
+            $response['response']['userDetail'] = $userDetail;
+
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 200);
+
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid User Details.']];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
     }
 }

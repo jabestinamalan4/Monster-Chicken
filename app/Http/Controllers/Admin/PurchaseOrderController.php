@@ -22,7 +22,7 @@ class PurchaseOrderController extends Controller
         else{
             $inputData = $request->input;
         }
-
+      //  dd($inputData);
         $inputUser = auth()->user();
 
         $rulesArray = [
@@ -87,11 +87,12 @@ class PurchaseOrderController extends Controller
         else{
             $purchaseOrder = new PurchaseOrder;
 
-            $purchaseOrder->user_id = auth()->user()->id;
-            $purchaseOrder->status = 0;
+            $purchaseOrder->user_id   = auth()->user()->id;
+            $purchaseOrder->status    = 0;
+            $purchaseOrder->vendor_id = isset($inputData->vendorId) ? $this->decryptId($inputData->vendorId) : "";
         }
 
-        $purchaseOrder->note = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
+        $purchaseOrder->note      = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
         $purchaseOrder->save();
 
         if(isset($inputData->purchaseId) && $inputData->purchaseId != null && $inputData->purchaseId != ""){
@@ -130,5 +131,15 @@ class PurchaseOrderController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+
+    public function purchaseOrderList(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
     }
 }

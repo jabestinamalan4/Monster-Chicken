@@ -50,6 +50,7 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('user/store', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('user/list', [UserManagementController::class, 'userList'])->middleware(['role:admin','auth:api']);
     Route::post('user/get-users', [UserManagementController::class, 'getUsers'])->middleware(['role:admin','auth:api']);
+    Route::post('user/profile', [UserManagementController::class,'profile']);
 
     Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
@@ -59,6 +60,7 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('vendor/change-status', [VendorController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['role:admin','auth:api']);
 
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
 
