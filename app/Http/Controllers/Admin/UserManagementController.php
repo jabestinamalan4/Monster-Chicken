@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use Crypt;
 use App\Models\User;
+use App\Models\State;
 use App\Models\Branch;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Jobs\SendEmailJob;
+use Illuminate\Http\Request;
 use App\Http\Traits\HelperTrait;
 use Spatie\Permission\Models\Role;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserManagementController extends Controller
