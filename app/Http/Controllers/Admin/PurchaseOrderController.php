@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Product;
+use App\MOdels\User;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
+use App\Models\ProductCategory;
 use App\Http\Traits\HelperTrait;
 use App\Models\PurchaseOrderItem;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PurchaseOrderController extends Controller
@@ -22,7 +25,7 @@ class PurchaseOrderController extends Controller
         else{
             $inputData = $request->input;
         }
-      //  dd($inputData);
+
         $inputUser = auth()->user();
 
         $rulesArray = [
@@ -141,5 +144,166 @@ class PurchaseOrderController extends Controller
         else{
             $inputData = $request->input;
         }
+
+        $query = PurchaseOrder::query();
+
+        if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
+            $query = $query->where('status',$inputData->status);
+        }
+
+        if (isset($inputData->userId) && $inputData->userId != null && $inputData->userId != "") {
+            $query = $query->where('user_id',$inputData->userId);
+        }
+
+        if (isset($inputData->vendorId) && $inputData->vendorId != null && $inputData->vendorId != "") {
+            $query = $query->where('vendor_id',$inputData->vendorId);
+        }
+
+        $purchaseOrderCount = $query->count();
+
+        $purchaseOrders = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
+        $purchaseOrderArray = [];
+
+        foreach($purchaseOrders as $purchaseOrder){
+            $purchaseOrderList   = [];
+            $userList            = [];
+            $userArray           = [];
+
+            $user = User::where('id',$purchaseOrder->user_id)->first();
+
+            if(isset($user->id)) {
+                $userList['userId']      = $this->encryptId($user->id);
+                $userList['userName']    = $user->name;
+                $userList['userEmail']   = $user->email;
+                $userList['userNumber']  = $user->number;
+
+                array_push($userArray,(object) $userList);
+            }
+
+            $purchaseOrderList['id']     = $this->encryptId($purchaseOrder->id);
+            $purchaseOrderList['user']   = $userArray;
+            $purchaseOrderList['note']   = $purchaseOrder->note;
+            $purchaseOrderList['status'] = $purchaseOrder->status;
+
+            array_push($purchaseOrderArray,(object) $purchaseOrderList);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["purchaseOrders"] = $purchaseOrderArray;
+        $response['response']["totalPurchaseOrder"] = $purchaseOrderCount;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+
+    }
+
+    public function purchaseOrderDetails(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+            'purchaseOrderId' => 'required'
+        ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->first();
+
+        if (!isset($purchaseOrder->id)) {
+            $response = ['status' => false, "message"=> ['Invalid Purchase Order Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $purchaseOrderArray  = [];
+
+        if(isset($purchaseOrder->id)) {
+            $purchaseOrderList   = [];
+
+            $user = User::where('id',$purchaseOrder->user_id)->first();
+
+            if(isset($user->id)) {
+                $userList            = [];
+                $userArray           = [];
+
+                $userList['userId']      = $this->encryptId($user->id);
+                $userList['userName']    = $user->name;
+                $userList['userEmail']   = $user->email;
+                $userList['userNumber']  = $user->number;
+
+                array_push($userArray,(object) $userList);
+            }
+
+            $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
+
+            $purchaseOrderItemArray  = [];
+
+            foreach($purchaseOrderItems as $purchaseOrderItem) {
+                $purchaseOrderItemList   = [];
+
+                $product = Product::where('id',$purchaseOrderItem->product_id)->first();
+
+                $productArray        = [];
+
+                if(isset($product->id)) {
+                    $productList         = [];
+                    $imageArray          = [];
+
+                    foreach((array)json_decode($product->image_url) as $imageUrl){
+                        $imageList  = [];
+
+                        $imageList['fileName'] = $imageUrl;
+                        $imageList['previewUrl'] = Storage::disk('public')->url('document/'.$imageUrl);
+                        array_push($imageArray,(object) $imageList);
+                    }
+
+                    $category = ProductCategory::where('id',$product->category)->first();
+
+                    $productList['id']            = $this->encryptId($product->id);
+                    $productList['categoryId']    = $this->encryptId($product->category);
+                    $productList['categoryName']  = $category->category;
+                    $productList['name']          = $product->name;
+                    $productList['price']         = $product->price;
+                    $productList['discountPrice'] = $product->discount_price	;
+                    $productList['image']         = $imageArray;
+
+                    array_push($productArray,(object) $productList);
+                }
+                $purchaseOrderItemList['id']       = $this->encryptId($purchaseOrderItem->id);
+                $purchaseOrderItemList['product']  = $productArray;
+                $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
+                $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
+
+                array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
+            }
+
+            $purchaseOrderList['id']    = $purchaseOrder->id;
+            $purchaseOrderList['user']  = $userArray;
+            $purchaseOrderList['note']  = $purchaseOrder->note;
+            $purchaseOrderList['status']= $purchaseOrder->status;
+            $purchaseOrderList['items'] = $purchaseOrderItemArray;
+
+            array_push($purchaseOrderArray,(object) $purchaseOrderList);
+        }
+
+         $response['status'] = true;
+         $response["message"] = ['Retrieved Successfully.'];
+         $response['response']["purchaseOrder"] = $purchaseOrderArray;
+
+         $encryptedResponse['data'] = $this->encryptData($response);
+         return response($encryptedResponse, 200);
     }
 }

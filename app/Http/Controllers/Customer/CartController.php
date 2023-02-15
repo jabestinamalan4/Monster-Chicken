@@ -461,8 +461,8 @@ class CartController extends Controller
         foreach($states as $state){
             $stateDetail = [];
 
-            $stateDetail['name'] = $state->state;
-            $stateDetail['value'] = $state->id;
+            $stateDetail['id']    = $this->decryptId($state->id);
+            $stateDetail['value'] = $state->state;
 
             array_push($stateArray,(object) $stateDetail);
         }

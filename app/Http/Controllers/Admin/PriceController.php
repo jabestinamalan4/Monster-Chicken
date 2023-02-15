@@ -48,7 +48,6 @@ class PriceController extends Controller
                 }
         }
 
-        $product->product_id = $this->decryptId($inputData->productId);
         $product->price = $inputData->price;
         $product->discount_price = $inputData->discountPrice;
         $product->save();

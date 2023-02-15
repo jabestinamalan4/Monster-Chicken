@@ -246,6 +246,8 @@ class UserManagementController extends Controller
 
         $query = $query->whereNotNull('name');
 
+        $query = $query->where('id', '!=', 1);
+
         $userCount = $query->count();
 
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
@@ -253,7 +255,7 @@ class UserManagementController extends Controller
         $userArray  = [];
 
 
-        foreach($users as $user){
+        foreach($users as $user) {
             $branchArray= [];
             $userList   = [];
             $rolesList  = [];
@@ -285,15 +287,28 @@ class UserManagementController extends Controller
 
             foreach($rolesName as $role)
             {
+                $stateArray = [];
+                $stateList  = [];
+
                 if($role=="cuttingCenter" || $role=="retailer") {
 
                     $branch = Branch::where('user_id',$user->id)->first();
+
+                    if(isset($branch->state)) {
+
+                        $stateName = State::where('id',$branch->state)->first();
+
+                        $stateList['id']   = $this->encryptId($stateName->id);
+                        $stateList['name'] = $stateName->state;
+
+                        array_push($stateArray,(object) $stateList);
+                    }
 
                     $branchList['address1'] = isset($branch->address_line_1) ? $branch->address_line_1 : "";
                     $branchList['address2'] = isset($branch->address_line_2) ? $branch->address_line_2 : "";
                     $branchList['pinCode']  = isset($branch->pin_code) ? $branch->pin_code : "";
                     $branchList['district'] = isset($branch->district) ? $branch->district : "";
-                    $branchList['state']    = isset($branch->state) ? $branch->state : "";
+                    $branchList['state']    = isset($branch->state) ? $stateArray : "";
                     $branchList['number']   = isset($branch->number) ? $branch->number : "";
                     $branchList['latitude'] = isset($branch->latitude) ? $branch->latitude : "";
                     $branchList['latitude'] = isset($branch->longitude) ? $branch->longitude : "";

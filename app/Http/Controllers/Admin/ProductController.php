@@ -475,7 +475,7 @@ class ProductController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $product = Product::where('status',1)->where('id',$this->decryptId($inputData->productId))->first();
+        $product = Product::where('id',$this->decryptId($inputData->productId))->first();
 
         if (!isset($product->id)) {
             $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];

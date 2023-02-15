@@ -61,6 +61,7 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['role:admin','auth:api']);
+    Route::post('purchase-order/view', [PurchaseOrderController::class, 'purchaseOrderDetails'])->middleware(['role:admin','auth:api']);
 
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
 
