@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\PriceController;
-use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\General\FileController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
@@ -54,10 +54,10 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
-    Route::post('vendor/store', [VendorController::class, 'store'])->middleware(['role:admin','auth:api']);
-    Route::post('vendor/list', [VendorController::class, 'vendorList'])->middleware(['role:admin','auth:api']);
-    Route::post('vendor/get-vendors', [VendorController::class, 'getVendors'])->middleware(['role:admin','auth:api']);
-    Route::post('vendor/change-status', [VendorController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
+    Route::post('supplier/store', [SupplierController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('supplier/list', [SupplierController::class, 'supplierList'])->middleware(['role:admin','auth:api']);
+    Route::post('supplier/get-suppliers', [SupplierController::class, 'getSupplier'])->middleware(['role:admin','auth:api']);
+    Route::post('supplier/change-status', [SupplierController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['role:admin','auth:api']);

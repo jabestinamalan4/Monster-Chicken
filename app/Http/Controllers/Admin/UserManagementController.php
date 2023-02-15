@@ -311,7 +311,7 @@ class UserManagementController extends Controller
                     $branchList['state']    = isset($branch->state) ? $stateArray : "";
                     $branchList['number']   = isset($branch->number) ? $branch->number : "";
                     $branchList['latitude'] = isset($branch->latitude) ? $branch->latitude : "";
-                    $branchList['latitude'] = isset($branch->longitude) ? $branch->longitude : "";
+                    $branchList['longitude']= isset($branch->longitude) ? $branch->longitude : "";
                     $branchList['staffs']   = isset($branch->staffs) ? $branch->staffs : "";
 
                     array_push($branchArray,$branchList);

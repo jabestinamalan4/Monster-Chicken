@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Vendor;
+use App\Models\Supplier;
 use App\Models\State;
 use App\Models\ProductCategory;
 use App\Http\Controllers\Controller;
@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Traits\HelperTrait;
 use Illuminate\Support\Facades\Validator;
 
-class VendorController extends Controller
+class SupplierController extends Controller
 {
     use HelperTrait;
 
@@ -55,32 +55,42 @@ class VendorController extends Controller
             }
         }
 
-        if (isset($inputData->vendorId)) {
-            $vendor = Vendor::where('id',$this->decryptId($inputData->vendorId))->first();
+        if (isset($inputData->supplierId)) {
+            $supplier = Supplier::where('id',$this->decryptId($inputData->supplierId))->first();
 
-            if(!isset($vendor->id)){
-                $response = ['status' => false, "message"=>"This vendor is does not exist", "responseCode" => 422];
+            if(!isset($supplier->id)){
+                $response = ['status' => false, "message"=>"This supplier is does not exist", "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
         }
         else{
-            $vendor = new Vendor;
+            $supplier = new Supplier;
         }
 
-        $vendor->type          = json_encode($inputData->type);
-        $vendor->name          = $inputData->name;
-        $vendor->address       = $inputData->address;
-        $vendor->pin_code      = $inputData->pinCode;
-        $vendor->district      = $inputData->district;
-        $vendor->state         = $inputData->state;
-        $vendor->number        = $inputData->number;
-        $vendor->email         = $inputData->email;
-        $vendor->contact_name  = $inputData->contactName;
-        $vendor->latitude      = $inputData->latitude;
-        $vendor->longitude     = $inputData->longitude;
-        $vendor->status        = 1;
-        $vendor->save();
+        if(isset($inputData->type)) {
+            $typeList = [];
+
+            foreach($inputData->type as $type) {
+
+                $type = $this->decryptId($type);
+               array_push($typeList, $type);
+            }
+        }
+
+        $supplier->type          = json_encode($typeList);
+        $supplier->name          = $inputData->name;
+        $supplier->address       = $inputData->address;
+        $supplier->pin_code      = $inputData->pinCode;
+        $supplier->district      = $inputData->district;
+        $supplier->state         = $inputData->state;
+        $supplier->number        = $inputData->number;
+        $supplier->email         = $inputData->email;
+        $supplier->contact_name  = $inputData->contactName;
+        $supplier->latitude      = $inputData->latitude;
+        $supplier->longitude     = $inputData->longitude;
+        $supplier->status        = 1;
+        $supplier->save();
 
         $response['status'] = true;
         $response["message"] = ['Registered successfully.'];
@@ -91,7 +101,7 @@ class VendorController extends Controller
         return response($encryptedResponse, 200);
     }
 
-    public function vendorList(Request $request)
+    public function supplierList(Request $request)
     {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
@@ -99,7 +109,7 @@ class VendorController extends Controller
         else{
             $inputData = $request->input;
         }
-        $query = Vendor::query();
+        $query = Supplier::query();
 
         if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
             $query = $query->where('status',$inputData->status);
@@ -120,19 +130,19 @@ class VendorController extends Controller
           });
         }
 
-        $vendorCount = $query->count();
+        $supplierCount = $query->count();
 
-        $vendors = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+        $suppliers = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $totalArray = [];
 
-        foreach($vendors as $vendor){
+        foreach($suppliers as $supplier){
             $stateArray    = [];
-            $vendorList   = [];
+            $supplierList   = [];
             $categoryList = [];
             $stateList    = [];
 
-            $types =json_decode($vendor->type);
+            $types =json_decode($supplier->type);
 
             foreach((array)$types as $type) {
                 $productCat = [];
@@ -145,9 +155,9 @@ class VendorController extends Controller
                 array_push($categoryList,(object) $productCat);
             }
 
-            if(isset($vendor->state)) {
+            if(isset($supplier->state)) {
 
-                $stateName = State::where('id',$vendor->state)->first();
+                $stateName = State::where('id',$supplier->state)->first();
 
                 $stateList['id']   = $this->encryptId($stateName->id);
                 $stateList['name'] = $stateName->state;
@@ -155,34 +165,34 @@ class VendorController extends Controller
                 array_push($stateArray,(object) $stateList);
             }
 
-            $vendorList['id']         = $this->encryptId($vendor->id);
-            $vendorList['categories'] = $categoryList;
-            $vendorList['name']       = $vendor->name;
-            $vendorList['address']    = $vendor->address;
-            $vendorList['pinCode']    = $vendor->pin_code;
-            $vendorList['district']   = $vendor->district;
-            $vendorList['state']      = $stateArray;
-            $vendorList['number']     = $vendor->number;
-            $vendorList['email']      = $vendor->email;
-            $vendorList['contactName']= $vendor->contact_name;
-            $vendorList['latitude']   = $vendor->latitude;
-            $vendorList['longitude']  = $vendor->longitude;
-            $vendorList['status']     = $vendor->status;
+            $supplierList['id']         = $this->encryptId($supplier->id);
+            $supplierList['categories'] = $categoryList;
+            $supplierList['name']       = $supplier->name;
+            $supplierList['address']    = $supplier->address;
+            $supplierList['pinCode']    = $supplier->pin_code;
+            $supplierList['district']   = $supplier->district;
+            $supplierList['state']      = $stateArray;
+            $supplierList['number']     = $supplier->number;
+            $supplierList['email']      = $supplier->email;
+            $supplierList['contactName']= $supplier->contact_name;
+            $supplierList['latitude']   = $supplier->latitude;
+            $supplierList['longitude']  = $supplier->longitude;
+            $supplierList['status']     = $supplier->status;
 
-            array_push($totalArray,(object) $vendorList);
+            array_push($totalArray,(object) $supplierList);
         }
 
 
          $response['status'] = true;
          $response["message"] = ['Retrieved Successfully.'];
-         $response['response']["vendors"] = $totalArray;
-         $response['response']["totalVendor"] = $vendorCount;
+         $response['response']["suppliers"] = $totalArray;
+         $response['response']["totalSupplier"] = $supplierCount;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);
     }
 
-    public function getVendors(Request $request)
+    public function getSupplier(Request $request)
     {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
@@ -190,7 +200,7 @@ class VendorController extends Controller
         else{
             $inputData = $request->input;
         }
-        $query = Vendor::query();
+        $query = Supplier::query();
 
 
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
@@ -201,17 +211,17 @@ class VendorController extends Controller
           });
         }
 
-        $vendors = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+        $suppliers = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
-        $vendorsArray  = [];
+        $suppliersArray  = [];
 
 
-        foreach($vendors as $vendor){
+        foreach($suppliers as $supplier){
             $categoryArray = [];
-            $vendorList    = [];
+            $supplierList  = [];
             $categoryList  = [];
 
-            foreach(json_decode($vendor->type) as $category) {
+            foreach(json_decode($supplier->type) as $category) {
 
                 $categoryName = ProductCategory::where('id',$category)->first();
 
@@ -220,19 +230,19 @@ class VendorController extends Controller
 
                 array_push($categoryArray,$categoryList);
             }
-            $vendorList['id']         = $this->encryptId($vendor->id);
-            $vendorList['categories'] = $categoryArray;
-            $vendorList['name']       = $vendor->name;
-            $vendorList['number']     = $vendor->number;
-            $vendorList['email']      = $vendor->email;
+            $supplierList['id']         = $this->encryptId($supplier->id);
+            $supplierList['categories'] = $categoryArray;
+            $supplierList['name']       = $supplier->name;
+            $supplierList['number']     = $supplier->number;
+            $supplierList['email']      = $supplier->email;
 
-            array_push($vendorsArray,(object) $vendorList);
+            array_push($suppliersArray,(object) $supplierList);
         }
 
 
          $response['status'] = true;
          $response["message"] = ['Retrieved Successfully.'];
-         $response['response']["vendors"] = $vendorsArray;
+         $response['response']["suppliers"] = $suppliersArray;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);
@@ -247,7 +257,7 @@ class VendorController extends Controller
             $inputData = $request->input;
         }
 
-        $rulesArray = [ 'vendorId' => 'required' ];
+        $rulesArray = [ 'supplierId' => 'required' ];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
@@ -257,20 +267,20 @@ class VendorController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $vendorDetails = Vendor::where('id',$this->decryptId($inputData->vendorId))->first();
+        $supplierDetails = Supplier::where('id',$this->decryptId($inputData->supplierId))->first();
 
-        if(isset($vendorDetails->id)){
+        if(isset($supplierDetails->id)){
 
-            if($vendorDetails->status==1){
-                $vendorDetails->status = 0;
+            if($supplierDetails->status==1){
+                $supplierDetails->status = 0;
             }else{
-                $vendorDetails->status = 1;
+                $supplierDetails->status = 1;
             }
 
-            $vendorDetails->save();
+            $supplierDetails->save();
         }
         else{
-            $response = ['status' => false, "message"=>"Invalid Vendor Id", "responseCode" => 422];
+            $response = ['status' => false, "message"=>"Invalid Supplier Id", "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
