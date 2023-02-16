@@ -29,8 +29,8 @@ class ProductController extends Controller
                         'productName' => 'required',
                         'description' => 'required',
                         'imageUrl' => 'required|array',
-                        'price' => 'required',
-                        'discountPrice' => 'required',
+                        'price' => 'required|numeric',
+                        'discountPrice' => 'required|numeric',
                     ];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
@@ -176,7 +176,7 @@ class ProductController extends Controller
             $query = $query->where('status',$inputData->status);
         }
         if (isset($inputData->category) && $inputData->category != null && $inputData->category != "") {
-            $query = $query->where('category',$inputData->category);
+            $query = $query->where('category',$this->decryptId($inputData->category));
         }
 
         if (isset($inputData->maxPrice) && $inputData->maxPrice != null && $inputData->maxPrice != "") {
