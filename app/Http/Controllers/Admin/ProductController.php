@@ -42,7 +42,7 @@ class ProductController extends Controller
         }
 
         $isExist = ProductCategory::where('id',$this->decryptId($inputData->category))->where('status',1)->first();
-        dd($isExist);
+
         if (!isset($isExist->id)) {
             $response = ['status' => false, "message"=> ['Invalid Category'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);

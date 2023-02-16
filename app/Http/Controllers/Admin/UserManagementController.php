@@ -435,12 +435,24 @@ class UserManagementController extends Controller
     {
         $userDetails = Auth()->user();
 
+        $rolesArray  = [];
+
         if (isset($userDetails->id)) {
             $userDetail = [];
+            $rolesList  = [];
 
-            $userDetail['name'] = isset(Auth()->user()->name) ? Auth()->user()->name : "";
+            $rolesName = $userDetails->getRoleNames()->toArray();
+
+            $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+            $rolesList['value'] = implode(" ",$rolesName);
+
+            array_push($rolesArray,$rolesList);
+
+            $userDetail['name']  = isset(Auth()->user()->name) ? Auth()->user()->name : "";
             $userDetail['email'] = isset(Auth()->user()->email) ? Auth()->user()->email: "";
-            $userDetail['number'] = isset(Auth()->user()->number) ? Auth()->user()->number : "";
+            $userDetail['number']= isset(Auth()->user()->number) ? Auth()->user()->number : "";
+            $userDetail['role']  = isset($rolesName[0]) ? $rolesArray: "";
+
 
             $response['status'] = true;
             $response["message"] = ['Retrieved successfully.'];
