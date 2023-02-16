@@ -114,17 +114,13 @@ class SupplierController extends Controller
         if (isset($inputData->status) && $inputData->status != null && $inputData->status != "") {
             $query = $query->where('status',$inputData->status);
         }
-        if (isset($inputData->type) && $inputData->type != null && $inputData->type != "") {
-            $query = $query->where('type',$inputData->type);
-        }
+
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
             $search = $inputData->search;
             $query  = $query->where(function ($function) use($search) {
                 $function->Where('name', 'like', '%' . $search . '%');
-                $function->orWhere('email_id', 'like', '%' . $search . '%');
-                $function->orWhere('number_1', 'like', '%' . $search . '%');
-                $function->orWhere('number_2', 'like', '%' . $search . '%');
-                $function->orWhere('type', 'like', '%' . $search . '%');
+                $function->orWhere('email', 'like', '%' . $search . '%');
+                $function->orWhere('number', 'like', '%' . $search . '%');
                 $function->orWhere('district', 'like', '%' . $search . '%');
                 $function->orWhere('state', 'like', '%' . $search . '%');
           });
