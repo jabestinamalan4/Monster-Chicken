@@ -181,7 +181,6 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList   = [];
             $userList            = [];
             $userArray           = [];
-            $supplierArray       = [];
 
             $user = User::where('id',$purchaseOrder->user_id)->first();
 
@@ -194,45 +193,17 @@ class PurchaseOrderController extends Controller
                 array_push($userArray,(object) $userList);
             }
 
-            if(isset($purchaseOrder->supplier_id)){
-                $supplierList  = [];
-                $categoryArray = [];
-
-                $supplier = Supplier::where('id',$purchaseOrder->supplier_id)->first();
-
-                foreach(json_decode($supplier->type) as $category) {
-                    $categoryList  = [];
-
-                    $categoryName = ProductCategory::where('id',$category)->first();
-
-                    $categoryList['id']   = $this->encryptId($categoryName->id);
-                    $categoryList['name'] = $categoryName->category;
-
-                    array_push($categoryArray,$categoryList);
-                }
-
-                $supplierList['id']         = $this->encryptId($supplier->id);
-                $supplierList['type']       = $categoryArray;
-                $supplierList['name']       = $supplier->name;
-                $supplierList['address']    = $supplier->address;
-                $supplierList['pinCode']    = $supplier->pin_code;
-                $supplierList['district']   = $supplier->district;
-                $supplierList['state']      = $supplier->state;
-                $supplierList['email']      = $supplier->email;
-                $supplierList['contact_name']=$supplier->contact_name;
-                $supplierList['latitude']   = $supplier->latitude;
-                $supplierList['longitude']  = $supplier->longitude;
-                $supplierList['number']     = $supplier->number;
-                $supplierList['status']     = $supplier->status;
-
-                array_push($supplierArray,$supplierList);
-            }
-
             $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']      = $userArray;
             $purchaseOrderList['note']      = $purchaseOrder->note;
+            $purchaseOrderList['supplier']  = $purchaseOrder->supplier_id;
             $purchaseOrderList['status']    = $purchaseOrder->status;
-            $purchaseOrderList['supplier']  = $supplierArray;
+
+            if($purchaseOrder->status == 0) {
+                $purchaseOrderList['statusName']  = 'Requested';
+            }else {
+                $purchaseOrderList['statusName']  = 'Pending';
+            }
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }
@@ -342,7 +313,15 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList['id']      = $purchaseOrder->id;
             $purchaseOrderList['user']    = $userArray;
             $purchaseOrderList['note']    = $purchaseOrder->note;
+            $purchaseOrderList['supplier']= $purchaseOrder->supplier_id;
             $purchaseOrderList['status']  = $purchaseOrder->status;
+
+            if($purchaseOrder->status == 0) {
+                $purchaseOrderList['statusName']  = 'Requested';
+            }else {
+                $purchaseOrderList['statusName']  = 'Pending';
+            }
+
             $purchaseOrderList['items']   = $purchaseOrderItemArray;
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);

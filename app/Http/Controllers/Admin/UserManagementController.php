@@ -298,7 +298,7 @@ class UserManagementController extends Controller
 
                         $stateName = State::where('id',$branch->state)->first();
 
-                        $stateList['id']   = $this->encryptId($stateName->id);
+                        $stateList['id']   = $stateName->id;
                         $stateList['name'] = $stateName->state;
 
                         array_push($stateArray,(object) $stateList);

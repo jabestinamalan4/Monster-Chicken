@@ -137,8 +137,8 @@ class SupplierController extends Controller
         $totalArray = [];
 
         foreach($suppliers as $supplier){
-            $stateArray    = [];
-            $supplierList   = [];
+            $stateArray   = [];
+            $supplierList = [];
             $categoryList = [];
             $stateList    = [];
 
@@ -149,7 +149,7 @@ class SupplierController extends Controller
 
                 $category = ProductCategory::where('id',$type)->first();
 
-                $productCat['id']       = isset($category->id) ? $this->encryptId($category->id) :"";
+                $productCat['id']   = isset($category->id) ? $this->encryptId($category->id) :"";
                 $productCat['name'] = isset($category->category) ? $category->category : "";
 
                 array_push($categoryList,(object) $productCat);
@@ -159,7 +159,7 @@ class SupplierController extends Controller
 
                 $stateName = State::where('id',$supplier->state)->first();
 
-                $stateList['id']   = $this->encryptId($stateName->id);
+                $stateList['id']   = $stateName->id;
                 $stateList['name'] = $stateName->state;
 
                 array_push($stateArray,(object) $stateList);
