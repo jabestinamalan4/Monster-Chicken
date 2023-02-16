@@ -88,8 +88,7 @@ class ProductController extends Controller
             $productDetail['price'] = $product->price;
             $productDetail['discountPrice'] = $product->discount_price;
             $productDetail['description'] = $product->description;
-            $productDetail['rating'] = $product->rating;
-            $productDetail['reviews'] = $product->reviews;
+            $productDetail['status'] = $product->status;
 
             $wishlistExist = Wishlist::where('product_id',$product->id)->where('user_id',$inputUser->id)->where('status',1)->first();
 
@@ -174,8 +173,7 @@ class ProductController extends Controller
         $productDetail['price'] = $product->price;
         $productDetail['discountPrice'] = $product->discount_price;
         $productDetail['description'] = $product->description;
-        $productDetail['rating'] = $product->rating;
-        $productDetail['reviews'] = $product->reviews;
+        $productDetail['status'] = $product->status;
 
         if (isset($inputUser->id)) {
             $cartExist = Cart::where('status',1)->where('product_id',$product->id)->where('user_id',$inputUser->id)->first();
@@ -334,8 +332,6 @@ class ProductController extends Controller
 
             $listDetail['quantity'] = $list->quantity;
             $listDetail['price'] = $list->product->price;
-            $listDetail['rating'] = $list->product->rating;
-            $listDetail['reviews'] = $list->product->reviews;
             $listDetail['status'] = $list->status;
 
             array_push($listArray,(object) $listDetail);

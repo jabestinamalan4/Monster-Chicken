@@ -42,7 +42,7 @@ class ProductController extends Controller
         }
 
         $isExist = ProductCategory::where('id',$this->decryptId($inputData->category))->where('status',1)->first();
-
+        dd($isExist);
         if (!isset($isExist->id)) {
             $response = ['status' => false, "message"=> ['Invalid Category'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
@@ -62,8 +62,6 @@ class ProductController extends Controller
         }
         else{
             $product = new Product;
-            $product->rating = 5;
-            $product->reviews = 0;
         }
 
         $product->status = isset($inputData->status) ? $inputData->status : 1;
@@ -215,8 +213,6 @@ class ProductController extends Controller
             $productsList['description']    = $product->description;
             $productsList['price']          = $product->price;
             $productsList['discountPrice']  = $product->discount_price;
-            $productsList['rating']         = $product->rating;
-            $productsList['reviews']        = $product->reviews;
             $productsList['updatedAt']      = $product->updated_at;
             $productsList['status']         = $product->status;
 
@@ -497,8 +493,6 @@ class ProductController extends Controller
         $productDetail['price'] = $product->price;
         $productDetail['discountPrice'] = $product->discount_price;
         $productDetail['description'] = $product->description;
-        $productDetail['rating'] = $product->rating;
-        $productDetail['reviews'] = $product->reviews;
 
         $imageArray = [];
 

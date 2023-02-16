@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Product;
+use App\Models\Supplier;
 use App\MOdels\User;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
@@ -38,6 +39,17 @@ class PurchaseOrderController extends Controller
             $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
+        }
+
+        if(isset($inputData->supplierId)) {
+
+            $supplier = Supplier::where('id',$inputData->supplierId)->first();
+
+            if(!isset($supplier->id)) {
+                $response = ['status' => false, "message"=> ['Invalid Supplier Id.'], "responseCode" => 422];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
         }
 
         $productArray = [];
@@ -92,7 +104,7 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrder->user_id   = auth()->user()->id;
             $purchaseOrder->status    = 0;
-            $purchaseOrder->vendor_id = isset($inputData->vendorId) ? $this->decryptId($inputData->vendorId) : "";
+            $purchaseOrder->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : "";
         }
 
         $purchaseOrder->note      = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
@@ -155,8 +167,8 @@ class PurchaseOrderController extends Controller
             $query = $query->where('user_id',$inputData->userId);
         }
 
-        if (isset($inputData->vendorId) && $inputData->vendorId != null && $inputData->vendorId != "") {
-            $query = $query->where('vendor_id',$inputData->vendorId);
+        if (isset($inputData->supplierId) && $inputData->supplierId != null && $inputData->supplierId != "") {
+            $query = $query->where('supplier_id',$inputData->supplierId);
         }
 
         $purchaseOrderCount = $query->count();
@@ -169,6 +181,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList   = [];
             $userList            = [];
             $userArray           = [];
+            $supplierArray       = [];
 
             $user = User::where('id',$purchaseOrder->user_id)->first();
 
@@ -181,10 +194,45 @@ class PurchaseOrderController extends Controller
                 array_push($userArray,(object) $userList);
             }
 
-            $purchaseOrderList['id']     = $this->encryptId($purchaseOrder->id);
-            $purchaseOrderList['user']   = $userArray;
-            $purchaseOrderList['note']   = $purchaseOrder->note;
-            $purchaseOrderList['status'] = $purchaseOrder->status;
+            if(isset($purchaseOrder->supplier_id)){
+                $supplierList  = [];
+                $categoryArray = [];
+
+                $supplier = Supplier::where('id',$purchaseOrder->supplier_id)->first();
+
+                foreach(json_decode($supplier->type) as $category) {
+                    $categoryList  = [];
+
+                    $categoryName = ProductCategory::where('id',$category)->first();
+
+                    $categoryList['id']   = $this->encryptId($categoryName->id);
+                    $categoryList['name'] = $categoryName->category;
+
+                    array_push($categoryArray,$categoryList);
+                }
+
+                $supplierList['id']         = $this->encryptId($supplier->id);
+                $supplierList['type']       = $categoryArray;
+                $supplierList['name']       = $supplier->name;
+                $supplierList['address']    = $supplier->address;
+                $supplierList['pinCode']    = $supplier->pin_code;
+                $supplierList['district']   = $supplier->district;
+                $supplierList['state']      = $supplier->state;
+                $supplierList['email']      = $supplier->email;
+                $supplierList['contact_name']=$supplier->contact_name;
+                $supplierList['latitude']   = $supplier->latitude;
+                $supplierList['longitude']  = $supplier->longitude;
+                $supplierList['number']     = $supplier->number;
+                $supplierList['status']     = $supplier->status;
+
+                array_push($supplierArray,$supplierList);
+            }
+
+            $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
+            $purchaseOrderList['user']      = $userArray;
+            $purchaseOrderList['note']      = $purchaseOrder->note;
+            $purchaseOrderList['status']    = $purchaseOrder->status;
+            $purchaseOrderList['supplier']  = $supplierArray;
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }
@@ -247,6 +295,7 @@ class PurchaseOrderController extends Controller
                 array_push($userArray,(object) $userList);
             }
 
+
             $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
 
             $purchaseOrderItemArray  = [];
@@ -290,11 +339,11 @@ class PurchaseOrderController extends Controller
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
 
-            $purchaseOrderList['id']    = $purchaseOrder->id;
-            $purchaseOrderList['user']  = $userArray;
-            $purchaseOrderList['note']  = $purchaseOrder->note;
-            $purchaseOrderList['status']= $purchaseOrder->status;
-            $purchaseOrderList['items'] = $purchaseOrderItemArray;
+            $purchaseOrderList['id']      = $purchaseOrder->id;
+            $purchaseOrderList['user']    = $userArray;
+            $purchaseOrderList['note']    = $purchaseOrder->note;
+            $purchaseOrderList['status']  = $purchaseOrder->status;
+            $purchaseOrderList['items']   = $purchaseOrderItemArray;
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }

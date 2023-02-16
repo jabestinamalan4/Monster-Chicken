@@ -289,8 +289,6 @@ class CartController extends Controller
 
             $cartDetail['quantity'] = $cart->quantity;
             $cartDetail['price'] = $cart->product->price;
-            $cartDetail['rating'] = $cart->product->rating;
-            $cartDetail['reviews'] = $cart->product->reviews;
             $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
             $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
             $cartDetail['status'] = $cart->status;
@@ -400,8 +398,6 @@ class CartController extends Controller
 
                         $cartDetail['quantity'] = $cart->quantity;
                         $cartDetail['price'] = $cart->product->price;
-                        $cartDetail['rating'] = $cart->product->rating;
-                        $cartDetail['reviews'] = $cart->product->reviews;
                         $cartDetail['totalPrice'] = (int) $cart->product->price * (int) $cart->quantity;
                         $totalCartPrice = $totalCartPrice + ((int) $cart->product->price * (int) $cart->quantity);
                         $cartDetail['status'] = $cart->status;
