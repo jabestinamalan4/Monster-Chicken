@@ -104,7 +104,7 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrder->user_id   = auth()->user()->id;
             $purchaseOrder->status    = 0;
-            $purchaseOrder->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : "";
+            $purchaseOrder->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
         }
 
         $purchaseOrder->note      = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
@@ -125,7 +125,7 @@ class PurchaseOrderController extends Controller
 
                 $itemData->purchase_order_id = $purchaseOrder->id;
                 $itemData->product_id = $item->id;
-                $itemData->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : "";
+                $itemData->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
                 $itemData->status = 1;
             }
 
