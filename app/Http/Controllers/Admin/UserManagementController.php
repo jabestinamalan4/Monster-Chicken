@@ -255,16 +255,19 @@ class UserManagementController extends Controller
             $rolesList  = [];
             $rolesArray = [];
             $branchList = [];
+            $adminArray = [];
 
             $admin = User::where('id',$user->admin_id)->first();
 
             $rolesName = $user->getRoleNames()->toArray();
 
             if(isset($admin->id)) {
-                $adminArray = [];
+                $adminList  = [];
 
-                $adminArray['adminName'] = $admin->name;
-                $adminArray['adminEmail'] = $admin->email;
+                $adminList['name'] = $admin->name;
+                $adminList['email'] = $admin->email;
+
+                array_push($adminArray,$adminList);
             }
 
             $userList['id']     = $this->encryptId($user->id);
@@ -272,6 +275,7 @@ class UserManagementController extends Controller
             $userList['email']  = $user->email;
             $userList['number'] = $user->number;
             $userList['status'] = $user->status;
+
             $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
             $rolesList['value'] = implode(" ",$rolesName);
 
@@ -313,6 +317,7 @@ class UserManagementController extends Controller
             }
 
             $userList['branch'] = $branchArray;
+            $userList['admin']  = $adminArray;
 
             array_push($userArray,(object) $userList);
         }
@@ -552,5 +557,117 @@ class UserManagementController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+
+    public function userDetails(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+            'userId' => 'required'
+        ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $user = User::where('id',$this->decryptId($inputData->userId))->first();
+
+        if (!isset($user->id)) {
+            $response = ['status' => false, "message"=> ['Invalid User Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $userArray = [];
+
+        if(isset($user->id))
+        {
+            $userList  = [];
+            $rolesList = [];
+            $rolesArray = [];
+            $branchArray = [];
+            $adminArray  = [];
+
+            $rolesName = $user->getRoleNames()->toArray();
+
+            $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+            $rolesList['value'] = implode(" ",$rolesName);
+
+            if(isset($rolesName[0]) && ($rolesName[0]=='cuttingCenter' || $rolesName[0]=='retailer')) {
+
+                $branch = Branch::where('user_id',$user->id)->first();
+
+                if(isset($branch->id)) {
+                    $branchList  = [];
+                    $stateArray  = [];
+
+                    if(isset($branch->state)) {
+                        $stateList  = [];
+
+                        $stateName = State::where('id',$branch->state)->first();
+
+                        $stateList['id']   = $stateName->id;
+                        $stateList['name'] = $stateName->state;
+
+                        array_push($stateArray,(object) $stateList);
+                    }
+
+                    $branchList['id']    = $this->encryptId($branch->id);
+                    $branchList['address1'] = $branch->address_line_1;
+                    $branchList['address2'] = $branch->address_line_2;
+                    $branchList['pinCode']  = $branch->pin_code;
+                    $branchList['district'] = $branch->district;
+                    $branchList['state']    = $stateArray;
+                    $branchList['number']   = $branch->number;
+                    $branchList['latitude'] = $branch->latitude;
+                    $branchList['longitude']= $branch->longitude;
+                    $branchList['staffs']   = $branch->staffs;
+
+                    array_push($branchArray,$branchList);
+                }
+
+            }
+
+            $admin = User::where('id',$user->admin_id)->first();
+
+            if(isset($admin->id)) {
+                $adminList  = [];
+
+                $adminList['name'] = $admin->name;
+                $adminList['email'] = $admin->email;
+
+                array_push($adminArray,$adminList);
+            }
+
+            array_push($rolesArray,$rolesList);
+
+            $userList['id']    = $this->encryptId($user->id);
+            $userList['name']  = $user->name;
+            $userList['email'] = $user->name;
+            $userList['number']= $user->name;
+            $userList['role']  = $rolesArray;
+            $userList['branch']= $branchArray;
+            $userList['admin'] = $adminArray;
+
+            array_push($userArray,$userList);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["user"] = $userArray;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+
     }
 }
