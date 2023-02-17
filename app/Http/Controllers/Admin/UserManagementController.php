@@ -653,8 +653,8 @@ class UserManagementController extends Controller
 
             $userList['id']    = $this->encryptId($user->id);
             $userList['name']  = $user->name;
-            $userList['email'] = $user->name;
-            $userList['number']= $user->name;
+            $userList['email'] = $user->email;
+            $userList['number']= $user->number;
             $userList['role']  = $rolesArray;
             $userList['branch']= $branchArray;
             $userList['admin'] = $adminArray;
