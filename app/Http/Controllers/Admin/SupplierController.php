@@ -289,4 +289,86 @@ class SupplierController extends Controller
         return response($encryptedResponse, 200);
 
     }
+
+    public function supplierDetails(Type $var = null)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [ 'supplierId' => 'required' ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $supplierDetails = Supplier::where('id',$this->decryptId($inputData->supplierId))->first();
+
+        if(isset($supplierDetails->id)){
+
+            $stateArray   = [];
+            $supplierList = [];
+            $categoryList = [];
+            $stateList    = [];
+
+            $types =json_decode($supplier->type);
+
+            foreach((array)$types as $type) {
+                $productCat = [];
+
+                $category = ProductCategory::where('id',$type)->first();
+
+                $productCat['id']   = isset($category->id) ? $this->encryptId($category->id) :"";
+                $productCat['name'] = isset($category->category) ? $category->category : "";
+
+                array_push($categoryList,(object) $productCat);
+            }
+
+            if(isset($supplier->state)) {
+
+                $stateName = State::where('id',$supplier->state)->first();
+
+                $stateList['id']   = $stateName->id;
+                $stateList['name'] = $stateName->state;
+
+                array_push($stateArray,(object) $stateList);
+            }
+
+            $supplierList['id']         = $this->encryptId($supplier->id);
+            $supplierList['categories'] = $categoryList;
+            $supplierList['name']       = $supplier->name;
+            $supplierList['address']    = $supplier->address;
+            $supplierList['pinCode']    = $supplier->pin_code;
+            $supplierList['district']   = $supplier->district;
+            $supplierList['state']      = $stateArray;
+            $supplierList['number']     = $supplier->number;
+            $supplierList['email']      = $supplier->email;
+            $supplierList['contactName']= $supplier->contact_name;
+            $supplierList['latitude']   = $supplier->latitude;
+            $supplierList['longitude']  = $supplier->longitude;
+            $supplierList['status']     = $supplier->status;
+
+            $supplierDetails = (object) $supplierList;
+        }
+        else{
+            $response = ['status' => false, "message"=> ['Invalid supplier Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Status Updated Successfully.'];
+        $response['responseCode'] = 200;
+        $response['response']['supplierDetails'] = $supplierDetails;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
 }
