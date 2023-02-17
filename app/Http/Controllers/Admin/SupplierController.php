@@ -313,6 +313,8 @@ class SupplierController extends Controller
 
         if(isset($supplierDetails->id)){
 
+            $supplier = $supplierDetails;
+
             $stateArray   = [];
             $supplierList = [];
             $categoryList = [];
