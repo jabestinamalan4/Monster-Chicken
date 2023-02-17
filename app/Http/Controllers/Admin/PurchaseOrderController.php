@@ -43,7 +43,7 @@ class PurchaseOrderController extends Controller
 
         if(isset($inputData->supplierId)) {
 
-            $supplier = Supplier::where('id',$inputData->supplierId)->first();
+            $supplier = Supplier::where('id',$this->decryptId($inputData->supplierId))->first();
 
             if(!isset($supplier->id)) {
                 $response = ['status' => false, "message"=> ['Invalid Supplier Id.'], "responseCode" => 422];
@@ -125,6 +125,7 @@ class PurchaseOrderController extends Controller
 
                 $itemData->purchase_order_id = $purchaseOrder->id;
                 $itemData->product_id = $item->id;
+                $itemData->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : "";
                 $itemData->status = 1;
             }
 
@@ -164,11 +165,11 @@ class PurchaseOrderController extends Controller
         }
 
         if (isset($inputData->userId) && $inputData->userId != null && $inputData->userId != "") {
-            $query = $query->where('user_id',$inputData->userId);
+            $query = $query->where('user_id',$this->decryptId($inputData->userId));
         }
 
         if (isset($inputData->supplierId) && $inputData->supplierId != null && $inputData->supplierId != "") {
-            $query = $query->where('supplier_id',$inputData->supplierId);
+            $query = $query->where('supplier_id',$this->decryptId($inputData->supplierId));
         }
 
         $purchaseOrderCount = $query->count();

@@ -9,6 +9,7 @@ use App\Http\Controllers\General\FileController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\StockController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,7 +51,8 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('user/store', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('user/list', [UserManagementController::class, 'userList'])->middleware(['role:admin','auth:api']);
     Route::post('user/get-users', [UserManagementController::class, 'getUsers'])->middleware(['role:admin','auth:api']);
-    Route::post('user/profile', [UserManagementController::class,'profile']);
+    Route::post('user/profile', [UserManagementController::class,'profile'])->middleware(['role:admin','auth:api']);
+    Route::post('user/branch-list', [UserManagementController::class,'branchList'])->middleware(['role:admin','auth:api']);
 
     Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
@@ -68,5 +70,9 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('file/upload', [FileController::class,'upload']);
 
     Route::get('role/list', [UserManagementController::class, 'rolesList'])->middleware(['role:admin|franchise','auth:api']);
+
+    Route::post('stock/store', [StockController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('stock/list', [StockController::class, 'stockList'])->middleware(['role:admin','auth:api']);
+
 
 });

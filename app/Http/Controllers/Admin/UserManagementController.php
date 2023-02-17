@@ -190,13 +190,7 @@ class UserManagementController extends Controller
     public function storeBranch($inputData,$userId)
     {
         if (isset($inputData->branchId)) {
-            $branch = Branch::where('id',$this->decryptId($inputData->branchId))->first();
-
-            if(!isset($branch->id)) {
-                $response = ['status' => false, "message"=>"This branch is does not exist", "responseCode" => 422];
-                $encryptedResponse['data'] = $this->encryptData($response);
-                return response($encryptedResponse, 400);
-            }
+            $branch = User::where('user_id',$userId)->first();
         }
         else{
             $branch = new Branch;
@@ -468,5 +462,95 @@ class UserManagementController extends Controller
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
+    }
+
+    public function branchList(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $query = Branch::query();
+
+        if(isset($inputData->userId) && ($inputData->userId!="" || $inputData->userId!=null)) {
+            $query = $query->where('user_id',$this->decryptId($inputData->userId));
+        }
+
+        if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
+            $search = $inputData->search;
+            $query  = $query->where(function ($function) use($search) {
+                $function->Where('quantity', 'like', '%' . $search . '%');
+          });
+        }
+
+        $branchCount = $query->count();
+
+        $branches = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
+        $branchArray = [];
+
+        foreach($branches as $branch){
+            $branchList = [];
+            $userArray = [];
+            $stateArray = [];
+            $rolesArray = [];
+
+            if(isset($branch->user_id)) {
+                $userList = [];
+                $rolesList = [];
+
+                $user = User::where('id',$branch->user_id)->first();
+
+                $rolesName = $user->getRoleNames()->toArray();
+
+                $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                $rolesList['value'] = implode(" ",$rolesName);
+
+                array_push($rolesArray,$rolesList);
+
+                $userList['id']     = $this->encryptId($user->id);
+                $userList['name']   = $user->name;
+                $userList['email']  = $user->email;
+                $userList['number'] = $user->number;
+                $userList['role']   = $rolesArray;
+
+                array_push($userArray,(object) $userList);
+            }
+
+            if(isset($branch->state)) {
+                $stateList  = [];
+
+                $stateName = State::where('id',$branch->state)->first();
+
+                $stateList['id']   = $stateName->id;
+                $stateList['name'] = $stateName->state;
+
+                array_push($stateArray,(object) $stateList);
+            }
+
+            $branchList['id']      = $this->encryptId($branch->id);
+            $branchList['user']    = $userArray;
+            $branchList['address1']= $branch->address_line_1;
+            $branchList['address2']= $branch->address_line_2;
+            $branchList['pinCode']= $branch->pin_code;
+            $branchList['district']= $branch->district;
+            $branchList['state']= $stateArray;
+            $branchList['latitude']= $branch->latitude;
+            $branchList['longitude']= $branch->	longitude;
+            $branchList['staffs']= $branch->staffs;
+
+            array_push($branchArray,(object) $branchList);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Retrieved Successfully.'];
+        $response['response']["branches"] = $branchArray;
+        $response['response']["totalBranch"] = $branchCount;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
     }
 }
