@@ -290,7 +290,7 @@ class SupplierController extends Controller
 
     }
 
-    public function supplierDetails(Type $var = null)
+    public function supplierDetails(Request $request)
     {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
