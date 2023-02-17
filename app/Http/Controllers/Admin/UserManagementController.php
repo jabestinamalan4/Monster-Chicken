@@ -49,7 +49,7 @@ class UserManagementController extends Controller
             $rulesArray['pinCode'] = 'required|min:6|max:6';
             $rulesArray['district']= 'required';
             $rulesArray['state']   = 'required|numeric';
-            $rulesArray['number']  = 'required|unique:branches|min:10|max:15';
+            $rulesArray['number']  = 'required|min:10|max:15';
             $rulesArray['latitude']= 'required|numeric|between:0,99.99';
             $rulesArray['longitude']= 'required|numeric|between:0,99.99';
             $rulesArray['staffs']   = 'required';
@@ -189,8 +189,8 @@ class UserManagementController extends Controller
 
     public function storeBranch($inputData,$userId)
     {
-        if (isset($inputData->branchId)) {
-            $branch = User::where('user_id',$userId)->first();
+        if (isset($inputData->userId)) {
+            $branch = Branch::where('user_id',$userId)->first();
         }
         else{
             $branch = new Branch;
