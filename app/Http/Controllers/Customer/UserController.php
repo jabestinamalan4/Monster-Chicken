@@ -88,6 +88,26 @@ class UserController extends Controller
             $productDetail['imageUrl'] = $imageArray;
             $productDetail['status'] = $product->status;
 
+            if (isset($inputUser->id)) {
+                $cartExist = Cart::where('status',1)->where('product_id',$product->id)->where('user_id',$inputUser->id)->first();
+
+                if (isset($cartExist->id)) {
+                    $productDetail['cartQuantity'] = $cartExist->quantity;
+                }
+                else{
+                    $productDetail['cartQuantity'] = 0;
+                }
+            }
+
+            $wishlistExist = Wishlist::where('product_id',$product->id)->where('user_id',$inputUser->id)->where('status',1)->first();
+
+            if (isset($wishlistExist->id)) {
+                $productDetail['wishlist'] = true;
+            }
+            else{
+                $productDetail['wishlist'] = false;
+            }
+
             array_push($productArray,(object) $productDetail);
         }
 
