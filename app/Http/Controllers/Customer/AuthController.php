@@ -328,6 +328,36 @@ class AuthController extends Controller
                         $user->device_key = $inputData->deviceKey;
                         $user->save();
                     }
+
+                    if ($inputUser->id != $user->id) {
+
+                        $isOldAvailable = Cart::where('user_id',$user->id)->where('status',1)->get();
+                        $isCartAvailable = Cart::where('user_id',$inputUser->id)->get();
+
+                        foreach ($isOldAvailable as $oldCart) {
+                            $oldCart->status = 0;
+                            $oldCart->save();
+                        }
+
+                        foreach($isCartAvailable as $cart){
+                            $cart->user_id = $user->id;
+                            $cart->save();
+                        }
+
+                        $isListAvailable = Wishlist::where('user_id',$inputUser->id)->get();
+
+                        foreach($isListAvailable as $list){
+                            $list->user_id = $user->id;
+                            $list->save();
+                        }
+
+                        $existingUser = User::where('id',$inputUser->id)->first();
+
+                        if (isset($existingUser->id)) {
+                            $existingUser->delete();
+                        }
+                    }
+
                     $response = ['status' => true, "message"=> ['Logged in successfully.'], "responseCode" => 200];
                     $response['response']['accessToken'] = $this->getAccessToken($user);
                     $response['response']['userId'] = $this->encryptId($user->id);
@@ -360,7 +390,14 @@ class AuthController extends Controller
                     }
 
                     if ($inputUser->id != $user->id) {
+
+                        $isOldAvailable = Cart::where('user_id',$user->id)->where('status',1)->get();
                         $isCartAvailable = Cart::where('user_id',$inputUser->id)->get();
+
+                        foreach ($isOldAvailable as $oldCart) {
+                            $oldCart->status = 0;
+                            $oldCart->save();
+                        }
 
                         foreach($isCartAvailable as $cart){
                             $cart->user_id = $user->id;
