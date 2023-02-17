@@ -14,8 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('vendor', function (Blueprint $table) {
-            $table->decimal('latitude')->nulllale();
-            $table->decimal('longitude')->nulllale();
+            $table->double('latitude')->nulllale();
+            $table->double('longitude')->nulllale();
             $table->string('type')->change();
             $table->dropColumn('number_1');
             $table->dropColumn('number_2');
