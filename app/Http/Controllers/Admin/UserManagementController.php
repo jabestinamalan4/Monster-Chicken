@@ -393,6 +393,7 @@ class UserManagementController extends Controller
 
         $query = $query->whereNotNull('name');
 
+        $totalCount = $query->count();
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $usersArray = [];
@@ -425,6 +426,7 @@ class UserManagementController extends Controller
         $response['status'] = true;
         $response["message"] = ['Retrieved Successfully.'];
         $response['response']["users"] = $usersArray;
+        $response['response']["totalCount"] = $totalCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
