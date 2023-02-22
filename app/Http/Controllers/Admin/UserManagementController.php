@@ -511,20 +511,23 @@ class UserManagementController extends Controller
 
                 $user = User::where('id',$branch->user_id)->first();
 
-                $rolesName = $user->getRoleNames()->toArray();
+                if (isset($user->id)) {
 
-                $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
-                $rolesList['value'] = implode(" ",$rolesName);
+                    $rolesName = $user->getRoleNames()->toArray();
 
-                array_push($rolesArray,$rolesList);
+                    $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                    $rolesList['value'] = implode(" ",$rolesName);
 
-                $userList['id']     = $this->encryptId($user->id);
-                $userList['name']   = $user->name;
-                $userList['email']  = $user->email;
-                $userList['number'] = $user->number;
-                $userList['role']   = $rolesArray;
+                    array_push($rolesArray,$rolesList);
 
-                array_push($userArray,(object) $userList);
+                    $userList['id']     = $this->encryptId($user->id);
+                    $userList['name']   = $user->name;
+                    $userList['email']  = $user->email;
+                    $userList['number'] = $user->number;
+                    $userList['role']   = $rolesArray;
+
+                    array_push($userArray,(object) $userList);
+                }
             }
 
             if(isset($branch->state)) {
