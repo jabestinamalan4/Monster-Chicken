@@ -311,7 +311,7 @@ class PurchaseOrderController extends Controller
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
 
-            $purchaseOrderList['id']      = $purchaseOrder->id;
+            $purchaseOrderList['id']      = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']    = $userArray;
             $purchaseOrderList['note']    = $purchaseOrder->note;
             $purchaseOrderList['supplier']= $purchaseOrder->supplier_id;

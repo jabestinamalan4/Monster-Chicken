@@ -424,7 +424,7 @@ class ProductController extends Controller
 
         $query    = $query->where('status',1);
 
-        $products = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+        $products = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
         $productsArray = [];
 
