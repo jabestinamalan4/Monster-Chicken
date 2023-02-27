@@ -156,10 +156,13 @@ class StockController extends Controller
                     array_push($stateArray,(object) $stateList);
                 }
 
-                $user = User::where('id',$branch->user_id)->first();
+                if(isset($branch->user_id))
+                {
+                    $user = User::where('id',$branch->user_id)->first();
+                }
 
                 $branchList['id']        = $this->encryptId($branch->id);
-                $branchList['user']      = $user->name;
+                $branchList['user']      = isset($user->name) ? $user->name: "";
                 $branchList['district']  = $branch->district;
                 $branchList['state']     = $stateArray;
 

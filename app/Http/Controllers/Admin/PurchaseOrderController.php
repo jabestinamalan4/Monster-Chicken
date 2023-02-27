@@ -456,16 +456,17 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $purchaseOrder = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->whereIn('status',2)->first();
+        $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))
+                            ->where('supplier_id', '!=', null)->where('status',2)->get();
 
-        if (!isset($purchaseOrder->id)) {
-            $response = ['status' => false, "message"=> ['Invalid Purchase Order Id.'], "responseCode" => 422];
-            $encryptedResponse['data'] = $this->encryptData($response);
-            return response($encryptedResponse, 400);
+        if(isset($purchaseOrderItems))
+        {
+            foreach($purchaseOrderItems as $purchaseOrderItems)
+            {
+                $purchaseOrderItems->status = 3;
+                $purchaseOrderItems->save();
+            }
         }
-
-        $purchaseOrder->status = 3;
-        $purchaseOrder->save();
 
         $response['status'] = true;
         $response["message"] = ['Updated successfully.'];
