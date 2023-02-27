@@ -394,6 +394,7 @@ class UserManagementController extends Controller
         $query = $query->whereNotNull('name');
 
         $totalCount = $query->count();
+
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $usersArray = [];

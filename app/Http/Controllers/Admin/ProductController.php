@@ -424,6 +424,8 @@ class ProductController extends Controller
 
         $query    = $query->where('status',1);
 
+        $productsCount = $query->count();
+
         $products = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 12);
 
         $productsArray = [];
@@ -445,6 +447,7 @@ class ProductController extends Controller
         $response['status'] = true;
         $response["message"] = ['Retrieved Successfully.'];
         $response['response']["products"] = $productsArray;
+        $response['response']["totalProducts"] = $productsCount;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);

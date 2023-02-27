@@ -207,6 +207,8 @@ class SupplierController extends Controller
           });
         }
 
+        $suppliersCount = $query->count();
+
         $suppliers = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $suppliersArray  = [];
@@ -239,6 +241,7 @@ class SupplierController extends Controller
          $response['status'] = true;
          $response["message"] = ['Retrieved Successfully.'];
          $response['response']["suppliers"] = $suppliersArray;
+         $response['response']["totalSuppliers"] = $suppliersCount;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);
