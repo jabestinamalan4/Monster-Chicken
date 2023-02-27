@@ -334,13 +334,11 @@ class PurchaseOrderController extends Controller
             }
 
             $purchaseOrderList['items']   = $purchaseOrderItemArray;
-
-            array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }
 
          $response['status'] = true;
          $response["message"] = ['Retrieved Successfully.'];
-         $response['response']["purchaseOrder"] = $purchaseOrderArray;
+         $response['response']["purchaseOrder"] = (object) $purchaseOrderList;
 
          $encryptedResponse['data'] = $this->encryptData($response);
          return response($encryptedResponse, 200);

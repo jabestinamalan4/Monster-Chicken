@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\FeedController;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,5 +78,10 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('stock/store', [StockController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('stock/list', [StockController::class, 'stockList'])->middleware(['role:admin','auth:api']);
 
+    Route::post('feed/store', [FeedController::class, 'store'])->middleware(['role:admin','auth:api']);
+    Route::post('feed/list', [FeedController::class, 'feedList'])->middleware(['role:admin','auth:api']);
+    Route::post('feed/view', [FeedController::class, 'feedDetails'])->middleware(['role:admin','auth:api']);
+    Route::post('feed/get-feeds', [FeedController::class, 'getFeeds'])->middleware(['role:admin','auth:api']);
+    Route::post('feed/change-status', [FeedController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
 });

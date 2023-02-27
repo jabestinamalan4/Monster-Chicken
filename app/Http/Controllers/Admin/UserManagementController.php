@@ -648,13 +648,11 @@ class UserManagementController extends Controller
             $userList['role']  = $rolesArray;
             $userList['branch']= (object)$branchList;
             $userList['admin'] = (object)$adminList;
-
-            array_push($userArray,$userList);
         }
 
         $response['status'] = true;
         $response["message"] = ['Retrieved Successfully.'];
-        $response['response']["user"] = $userArray;
+        $response['response']["user"] = (object)$userList;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
