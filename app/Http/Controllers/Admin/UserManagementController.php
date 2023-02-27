@@ -482,15 +482,18 @@ class UserManagementController extends Controller
 
         $query = Branch::query();
 
-        if(isset($inputData->userId) && ($inputData->userId!="" || $inputData->userId!=null)) {
-            $query = $query->where('user_id',$this->decryptId($inputData->userId));
-        }
+        $query = $query->whereHas('user', function($q){
+                    $q->where('status', 1);
+                });
 
         if (isset($inputData->search) && $inputData->search != null && $inputData->search != "") {
             $search = $inputData->search;
-            $query  = $query->where(function ($function) use($search) {
-                $function->Where('quantity', 'like', '%' . $search . '%');
-          });
+            $query->whereHas('user', function($q){
+                    $q->where(function ($function) use($search) {
+                            $function->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%');
+                    });
+                });
         }
 
         $branchCount = $query->count();
@@ -501,7 +504,6 @@ class UserManagementController extends Controller
 
         foreach($branches as $branch){
             $branchList = [];
-            $userArray = [];
             $stateArray = [];
             $rolesArray = [];
 
@@ -509,7 +511,7 @@ class UserManagementController extends Controller
                 $userList = [];
                 $rolesList = [];
 
-                $user = User::where('id',$branch->user_id)->first();
+                $user = User::where('id',$branch->user_id)->where('status',1)->first();
 
                 if (isset($user->id)) {
 
@@ -518,41 +520,35 @@ class UserManagementController extends Controller
                     $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
                     $rolesList['value'] = implode(" ",$rolesName);
 
-                    array_push($rolesArray,$rolesList);
-
                     $userList['id']     = $this->encryptId($user->id);
                     $userList['name']   = $user->name;
                     $userList['email']  = $user->email;
                     $userList['number'] = $user->number;
-                    $userList['role']   = $rolesArray;
+                    $userList['role']   = (object) $rolesList;
 
-                    array_push($userArray,(object) $userList);
+                    if(isset($branch->state)) {
+                        $stateList  = [];
+
+                        $stateName = State::where('id',$branch->state)->first();
+
+                        $stateList['id']   = $stateName->id;
+                        $stateList['name'] = $stateName->state;
+                    }
+
+                    $branchList['id']      = $this->encryptId($branch->id);
+                    $branchList['user']    = (object) $userList;
+                    $branchList['address1']= $branch->address_line_1;
+                    $branchList['address2']= $branch->address_line_2;
+                    $branchList['pinCode']= $branch->pin_code;
+                    $branchList['district']= $branch->district;
+                    $branchList['state']= (object) $stateList;
+                    $branchList['latitude']= $branch->latitude;
+                    $branchList['longitude']= $branch->	longitude;
+                    $branchList['staffs']= $branch->staffs;
+
+                    array_push($branchArray,(object) $branchList);
                 }
             }
-
-            if(isset($branch->state)) {
-                $stateList  = [];
-
-                $stateName = State::where('id',$branch->state)->first();
-
-                $stateList['id']   = $stateName->id;
-                $stateList['name'] = $stateName->state;
-
-                array_push($stateArray,(object) $stateList);
-            }
-
-            $branchList['id']      = $this->encryptId($branch->id);
-            $branchList['user']    = $userArray;
-            $branchList['address1']= $branch->address_line_1;
-            $branchList['address2']= $branch->address_line_2;
-            $branchList['pinCode']= $branch->pin_code;
-            $branchList['district']= $branch->district;
-            $branchList['state']= $stateArray;
-            $branchList['latitude']= $branch->latitude;
-            $branchList['longitude']= $branch->	longitude;
-            $branchList['staffs']= $branch->staffs;
-
-            array_push($branchArray,(object) $branchList);
         }
 
         $response['status'] = true;
