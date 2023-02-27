@@ -136,8 +136,6 @@ class StockController extends Controller
                 $productList['name']      = $product->name;
                 $productList['categoryId']= $this->encryptId($category->id);
                 $productList['category']  = $category->category;
-
-                array_push($productArray,(object) $productList);
             }
 
             if(isset($stock->branch_id)) {
@@ -152,8 +150,6 @@ class StockController extends Controller
 
                     $stateList['id']   = $stateName->id;
                     $stateList['name'] = $stateName->state;
-
-                    array_push($stateArray,(object) $stateList);
                 }
 
                 if(isset($branch->user_id))
@@ -164,14 +160,12 @@ class StockController extends Controller
                 $branchList['id']        = $this->encryptId($branch->id);
                 $branchList['user']      = isset($user->name) ? $user->name: "";
                 $branchList['district']  = $branch->district;
-                $branchList['state']     = $stateArray;
-
-                array_push($branchArray,(object) $branchList);
+                $branchList['state']     = (object) $stateList;
             }
 
             $stockList['id']      = $this->encryptId($stock->id);
-            $stockList['product'] = $productArray;
-            $stockList['branch']  = $branchArray;
+            $stockList['product'] = (object) $productList;
+            $stockList['branch']  = (object) $branchList;
             $stockList['quantity']= $stock->quantity;
 
             array_push($stockArray,(object) $stockList);

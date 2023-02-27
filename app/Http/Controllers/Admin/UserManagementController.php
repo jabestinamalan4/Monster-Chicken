@@ -255,7 +255,6 @@ class UserManagementController extends Controller
             $rolesList  = [];
             $rolesArray = [];
             $branchList = [];
-            $adminArray = [];
 
             $admin = User::where('id',$user->admin_id)->first();
 
@@ -267,7 +266,6 @@ class UserManagementController extends Controller
                 $adminList['name'] = $admin->name;
                 $adminList['email'] = $admin->email;
 
-                array_push($adminArray,$adminList);
             }
 
             $userList['id']     = $this->encryptId($user->id);
@@ -298,26 +296,22 @@ class UserManagementController extends Controller
 
                         $stateList['id']   = $stateName->id;
                         $stateList['name'] = $stateName->state;
-
-                        array_push($stateArray,(object) $stateList);
                     }
 
                     $branchList['address1'] = isset($branch->address_line_1) ? $branch->address_line_1 : "";
                     $branchList['address2'] = isset($branch->address_line_2) ? $branch->address_line_2 : "";
                     $branchList['pinCode']  = isset($branch->pin_code) ? $branch->pin_code : "";
                     $branchList['district'] = isset($branch->district) ? $branch->district : "";
-                    $branchList['state']    = isset($branch->state) ? $stateArray : "";
+                    $branchList['state']    = isset($branch->state) ? (object)$stateList : "";
                     $branchList['number']   = isset($branch->number) ? $branch->number : "";
                     $branchList['latitude'] = isset($branch->latitude) ? $branch->latitude : "";
                     $branchList['longitude']= isset($branch->longitude) ? $branch->longitude : "";
                     $branchList['staffs']   = isset($branch->staffs) ? $branch->staffs : "";
-
-                    array_push($branchArray,$branchList);
                 }
             }
 
-            $userList['branch'] = $branchArray;
-            $userList['admin']  = $adminArray;
+            $userList['branch'] = (object)$branchList;
+            $userList['admin']  = (object)$adminList;
 
             array_push($userArray,(object) $userList);
         }
@@ -620,8 +614,6 @@ class UserManagementController extends Controller
 
                         $stateList['id']   = $stateName->id;
                         $stateList['name'] = $stateName->state;
-
-                        array_push($stateArray,(object) $stateList);
                     }
 
                     $branchList['id']    = $this->encryptId($branch->id);
@@ -629,13 +621,11 @@ class UserManagementController extends Controller
                     $branchList['address2'] = $branch->address_line_2;
                     $branchList['pinCode']  = $branch->pin_code;
                     $branchList['district'] = $branch->district;
-                    $branchList['state']    = $stateArray;
+                    $branchList['state']    = (object)$stateList;
                     $branchList['number']   = $branch->number;
                     $branchList['latitude'] = $branch->latitude;
                     $branchList['longitude']= $branch->longitude;
                     $branchList['staffs']   = $branch->staffs;
-
-                    array_push($branchArray,$branchList);
                 }
 
             }
@@ -647,8 +637,6 @@ class UserManagementController extends Controller
 
                 $adminList['name'] = $admin->name;
                 $adminList['email'] = $admin->email;
-
-                array_push($adminArray,$adminList);
             }
 
             array_push($rolesArray,$rolesList);
@@ -658,8 +646,8 @@ class UserManagementController extends Controller
             $userList['email'] = $user->email;
             $userList['number']= $user->number;
             $userList['role']  = $rolesArray;
-            $userList['branch']= $branchArray;
-            $userList['admin'] = $adminArray;
+            $userList['branch']= (object)$branchList;
+            $userList['admin'] = (object)$adminList;
 
             array_push($userArray,$userList);
         }

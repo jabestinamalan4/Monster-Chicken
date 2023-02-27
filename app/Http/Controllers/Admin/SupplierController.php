@@ -157,8 +157,6 @@ class SupplierController extends Controller
 
                 $stateList['id']   = $stateName->id;
                 $stateList['name'] = $stateName->state;
-
-                array_push($stateArray,(object) $stateList);
             }
 
             $supplierList['id']         = $this->encryptId($supplier->id);
@@ -167,7 +165,7 @@ class SupplierController extends Controller
             $supplierList['address']    = $supplier->address;
             $supplierList['pinCode']    = $supplier->pin_code;
             $supplierList['district']   = $supplier->district;
-            $supplierList['state']      = $stateArray;
+            $supplierList['state']      = (object)$stateList;
             $supplierList['number']     = $supplier->number;
             $supplierList['email']      = $supplier->email;
             $supplierList['contactName']= $supplier->contact_name;
@@ -342,8 +340,6 @@ class SupplierController extends Controller
 
                 $stateList['id']   = $stateName->id;
                 $stateList['name'] = $stateName->state;
-
-                array_push($stateArray,(object) $stateList);
             }
 
             $supplierList['id']         = $this->encryptId($supplier->id);
@@ -352,7 +348,7 @@ class SupplierController extends Controller
             $supplierList['address']    = $supplier->address;
             $supplierList['pinCode']    = $supplier->pin_code;
             $supplierList['district']   = $supplier->district;
-            $supplierList['state']      = $stateArray;
+            $supplierList['state']      = $stateList;
             $supplierList['number']     = $supplier->number;
             $supplierList['email']      = $supplier->email;
             $supplierList['contactName']= $supplier->contact_name;

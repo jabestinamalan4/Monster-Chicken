@@ -182,6 +182,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList   = [];
             $userList            = [];
             $userArray           = [];
+            $supplierList        = [];
 
             $user = User::where('id',$purchaseOrder->user_id)->first();
 
@@ -190,14 +191,20 @@ class PurchaseOrderController extends Controller
                 $userList['userName']    = $user->name;
                 $userList['userEmail']   = $user->email;
                 $userList['userNumber']  = $user->number;
+            }
 
-                array_push($userArray,(object) $userList);
+            $supplier = Supplier::where('id',$purchaseOrder->supplier_id)->first();
+
+            if(isset($supplier->id))
+            {
+                $supplierList['id']    = $this->encryptId($supplier->id);
+                $supplierList['name']  = $supplier->name;
             }
 
             $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
-            $purchaseOrderList['user']      = $userArray;
+            $purchaseOrderList['user']      = (object) $userList;
             $purchaseOrderList['note']      = $purchaseOrder->note;
-            $purchaseOrderList['supplier']  = $purchaseOrder->supplier_id;
+            $purchaseOrderList['supplier']  = (object)$supplierList;
             $purchaseOrderList['status']    = $purchaseOrder->status;
 
             if($purchaseOrder->status == 0) {
@@ -249,6 +256,7 @@ class PurchaseOrderController extends Controller
         }
 
         $purchaseOrderArray  = [];
+        $supplierList        = [];
 
         if(isset($purchaseOrder->id)) {
             $purchaseOrderList   = [];
@@ -263,10 +271,15 @@ class PurchaseOrderController extends Controller
                 $userList['userName']    = $user->name;
                 $userList['userEmail']   = $user->email;
                 $userList['userNumber']  = $user->number;
-
-                array_push($userArray,(object) $userList);
             }
 
+            $supplier = Supplier::where('id',$purchaseOrder->supplier_id)->first();
+
+            if(isset($supplier->id))
+            {
+                $supplierList['id']    = $this->encryptId($supplier->id);
+                $supplierList['name']  = $supplier->name;
+            }
 
             $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
 
@@ -274,10 +287,9 @@ class PurchaseOrderController extends Controller
 
             foreach($purchaseOrderItems as $purchaseOrderItem) {
                 $purchaseOrderItemList   = [];
+                $productArray            = [];
 
                 $product = Product::where('id',$purchaseOrderItem->product_id)->first();
-
-                $productArray        = [];
 
                 if(isset($product->id)) {
                     $productList         = [];
@@ -300,11 +312,9 @@ class PurchaseOrderController extends Controller
                     $productList['price']         = $product->price;
                     $productList['discountPrice'] = $product->discount_price	;
                     $productList['image']         = $imageArray;
-
-                    array_push($productArray,(object) $productList);
                 }
                 $purchaseOrderItemList['id']       = $this->encryptId($purchaseOrderItem->id);
-                $purchaseOrderItemList['product']  = $productArray;
+                $purchaseOrderItemList['product']  = (object) $productList;
                 $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
                 $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
 
@@ -312,9 +322,9 @@ class PurchaseOrderController extends Controller
             }
 
             $purchaseOrderList['id']      = $this->encryptId($purchaseOrder->id);
-            $purchaseOrderList['user']    = $userArray;
+            $purchaseOrderList['user']    = (object) $userList;
             $purchaseOrderList['note']    = $purchaseOrder->note;
-            $purchaseOrderList['supplier']= $purchaseOrder->supplier_id;
+            $purchaseOrderList['supplier']= (object) $supplierList;
             $purchaseOrderList['status']  = $purchaseOrder->status;
 
             if($purchaseOrder->status == 0) {

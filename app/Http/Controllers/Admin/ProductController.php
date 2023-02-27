@@ -483,21 +483,9 @@ class ProductController extends Controller
         }
 
         $productDetail = [];
-
-        $productDetail['productId'] = $this->encryptId($product->id);
-        $productDetail['productName'] = $product->name;
+        $imageArray    = [];
 
         $category = ProductCategory::where('id',$product->category)->where('status',1)->first();
-        if (isset($category->category)) {
-            $productDetail['categoryId'] = $category->id;
-            $productDetail['categoryName'] = $category->category;
-        }
-
-        $productDetail['price'] = $product->price;
-        $productDetail['discountPrice'] = $product->discount_price;
-        $productDetail['description'] = $product->description;
-
-        $imageArray = [];
 
         foreach(json_decode($product->image_url) as $image){
             $imageUrl = Storage::disk('public')->url('document/'.$image);
@@ -505,8 +493,15 @@ class ProductController extends Controller
             array_push($imageArray,$imageUrl);
         }
 
-        $productDetail['imageUrl'] = $imageArray;
-        $productDetail['status'] = $product->status;
+        $productDetail['productId']     = $this->encryptId($product->id);
+        $productDetail['productName']   = $product->name;
+        $productDetail['categoryId']    = isset($category->id) ? $category->id : "";
+        $productDetail['categoryName']  = isset($category->category) ? $category->category : "";
+        $productDetail['price']         = $product->price;
+        $productDetail['discountPrice'] = $product->discount_price;
+        $productDetail['description']   = $product->description;
+        $productDetail['imageUrl']      = $imageArray;
+        $productDetail['status']        = $product->status;
 
         $response['status'] = true;
         $response["message"] = ['Retrieved successfully.'];
