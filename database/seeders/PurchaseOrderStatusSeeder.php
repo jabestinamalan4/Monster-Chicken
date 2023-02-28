@@ -15,7 +15,7 @@ class PurchaseOrderStatusSeeder extends Seeder
      */
     public function run()
     {
-        $status = ['Created','Pending for Delivery','Out for Delivery','Delivered'];
+        $status = ['Created','Pending for Delivery','Out for Delivery','Delivered','Delivered With Change In Quantity'];
 
         foreach($status as $key => $value){
             $purchaseOrderStatus = new PurchaseOrderStatus;

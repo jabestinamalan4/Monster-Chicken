@@ -29,9 +29,7 @@ class PurchaseOrderController extends Controller
 
         $inputUser = auth()->user();
 
-        $rulesArray = [
-                        'productData' => 'required|array'
-                    ];
+        $rulesArray = ['productData' => 'required|array'];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
@@ -204,7 +202,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']      = (object) $userList;
             $purchaseOrderList['note']      = $purchaseOrder->note;
-            $purchaseOrderList['supplier']  = (object)$supplierList;
+            $purchaseOrderList['supplier']  = (object) $supplierList;
             $purchaseOrderList['status']    = $purchaseOrder->status;
 
             if($purchaseOrder->status == 0) {
@@ -478,6 +476,88 @@ class PurchaseOrderController extends Controller
 
         $response['status'] = true;
         $response["message"] = ['Updated successfully.'];
+        $response['responseCode'] = 200;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function orderDelivered(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+            'purchaseOrderId' => 'required',
+            'status' => 'required'
+        ];
+
+        if(isset($inputData->status) && $inputData->status !='Received')
+        {
+            $rulesArray['quantity'] = 'required';
+        }
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->first();
+
+        if(!isset($purchaseOrder->id)) {
+            $response = ['status' => false, "message"=> ['Invalid PurchaseOrder Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        if($purchaseOrder->status==3)
+        {
+            $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
+
+            if(isset($purchaseOrderItems))
+            {
+                foreach($purchaseOrderItems as $purchaseOrderItem)
+                {
+                    if($purchaseOrderItem->status==3)
+                    {
+                        $purchaseOrderToDelivered = PurchaseOrderItem::where('id',$purchaseOrderItem->id)->first();
+
+                        if($inputData->status == 'Received')
+                        {
+                            $purchaseOrderToDelivered->status = 4;
+                            $purchaseOrderToDelivered->save();
+                        }
+                        else{
+                            $purchaseOrderToDelivered->status = 5;
+                            $purchaseOrderToDelivered->quantity = $inputData->quantity;
+                            $purchaseOrderToDelivered->save();
+                        }
+                    }
+                    else{
+                        $response = ['status' => false, "message"=> ['Can change to purchase order Items status'], "responseCode" => 422];
+                        $encryptedResponse['data'] = $this->encryptData($response);
+                        return response($encryptedResponse, 400);
+                    }
+                }
+            }
+        }
+
+        else
+        {
+            $response = ['status' => false, "message"=> ['Can change to purchase order status'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Purchase order delivered successfully.'];
         $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);

@@ -69,6 +69,7 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('purchase-order/view', [PurchaseOrderController::class, 'purchaseOrderDetails'])->middleware(['role:admin','auth:api']);
     Route::post('purchase-order/assign', [PurchaseOrderController::class, 'orderAssign'])->middleware(['role:admin','auth:api']);
     Route::post('purchase-order/delivery', [PurchaseOrderController::class, 'orderDelivery'])->middleware(['role:admin','auth:api']);
+    Route::post('purchase-order/order-delivered', [PurchaseOrderController::class, 'orderDelivered'])->middleware(['role:franchise','auth:api']);
     Route::post('test', [PurchaseOrderController::class, 'solution']);
 
     Route::post('file/upload', [FileController::class,'upload']);
