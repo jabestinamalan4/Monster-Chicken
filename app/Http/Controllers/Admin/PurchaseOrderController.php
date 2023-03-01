@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Product;
 use App\Models\Supplier;
-use App\MOdels\User;
+use App\Models\User;
+use App\Models\Branch;
+use App\Models\Stock;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use App\Models\ProductCategory;
@@ -308,7 +310,7 @@ class PurchaseOrderController extends Controller
                     $productList['categoryName']  = $category->category;
                     $productList['name']          = $product->name;
                     $productList['price']         = $product->price;
-                    $productList['discountPrice'] = $product->discount_price	;
+                    $productList['discountPrice'] = $product->discount_price;
                     $productList['image']         = $imageArray;
                 }
                 $purchaseOrderItemList['id']       = $this->encryptId($purchaseOrderItem->id);
@@ -536,8 +538,26 @@ class PurchaseOrderController extends Controller
                         }
                         else{
                             $purchaseOrderToDelivered->status = 5;
-                            $purchaseOrderToDelivered->quantity = $inputData->quantity;
+                            $purchaseOrderToDelivered->change_quantity = $inputData->quantity;
                             $purchaseOrderToDelivered->save();
+                        }
+
+                        if(isset($purchaseOrderToDelivered->id)){
+                            $branch = Branch::where('user_id',$purchaseOrder->user_id)->first();
+
+                            if(isset($inputData->status) && $inputData->status !='Received')
+                            {
+                                $quantity = $inputData->quantity;
+                            }
+                            else{
+                                $quantity = $purchaseOrderToDelivered->quantity;
+                            }
+
+                            $stock = new Stock;
+                            $stock->product_id  = $purchaseOrderItem->product_id;
+                            $stock->quantity    = $quantity;
+                            $stock->branch_id   = $branch->id;
+                            $stock->save();
                         }
                     }
                     else{

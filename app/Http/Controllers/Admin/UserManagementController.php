@@ -616,7 +616,7 @@ class UserManagementController extends Controller
                         $stateList['name'] = $stateName->state;
                     }
 
-                    $branchList['id']    = $this->encryptId($branch->id);
+                    $branchList['id']       = $this->encryptId($branch->id);
                     $branchList['address1'] = $branch->address_line_1;
                     $branchList['address2'] = $branch->address_line_2;
                     $branchList['pinCode']  = $branch->pin_code;
