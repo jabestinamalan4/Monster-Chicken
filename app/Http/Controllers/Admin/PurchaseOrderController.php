@@ -286,6 +286,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrderItemArray  = [];
 
             foreach($purchaseOrderItems as $purchaseOrderItem) {
+
                 $purchaseOrderItemList   = [];
                 $productArray            = [];
 
@@ -320,6 +321,15 @@ class PurchaseOrderController extends Controller
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
+            $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->where('supplier_id','=',null)->count();
+
+            if($purchaseOrderItems==0)
+            {
+                $changeOutForDelivery    = true;
+            }
+            else{
+                $changeOutForDelivery    = false;
+            }
 
             $purchaseOrderList['id']      = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']    = (object) $userList;
@@ -334,6 +344,7 @@ class PurchaseOrderController extends Controller
             }
 
             $purchaseOrderList['items']   = $purchaseOrderItemArray;
+            $purchaseOrderList['changeOutForDelivery']  = $changeOutForDelivery;
         }
 
          $response['status'] = true;
