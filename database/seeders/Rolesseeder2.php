@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 
 class Rolesseeder2 extends Seeder
 {
@@ -30,7 +30,7 @@ class Rolesseeder2 extends Seeder
         return [
             ['name' => 'cuttingCenter'],
             ['name' => 'retailer'],
-            ['name' => 'devilery']
+            ['name' => 'delivery']
         ];
     }
 }

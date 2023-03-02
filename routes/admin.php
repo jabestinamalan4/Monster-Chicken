@@ -40,7 +40,7 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('product/store', [ProductController::class, 'store'])->middleware(['role:admin','auth:api']);
     Route::post('product/list', [ProductController::class, 'productList'])->middleware(['role:admin|franchise','auth:api']);
     Route::post('product/view', [ProductController::class, 'productDetails'])->middleware(['role:admin','auth:api']);
-    Route::post('product/get-products', [ProductController::class, 'getProducts'])->middleware(['role:admin','auth:api']);
+    Route::post('product/get-products', [ProductController::class, 'getProducts'])->middleware(['auth:api']);
     Route::post('product/change-status', [ProductController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
     Route::post('product/category-store', [ProductController::class, 'storeCategory'])->middleware(['role:admin','auth:api']);
@@ -65,11 +65,11 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('supplier/change-status', [SupplierController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
-    Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['role:admin','auth:api']);
-    Route::post('purchase-order/view', [PurchaseOrderController::class, 'purchaseOrderDetails'])->middleware(['role:admin','auth:api']);
-    Route::post('purchase-order/assign', [PurchaseOrderController::class, 'orderAssign'])->middleware(['role:admin','auth:api']);
-    Route::post('purchase-order/delivery', [PurchaseOrderController::class, 'orderDelivery'])->middleware(['role:admin','auth:api']);
-    Route::post('purchase-order/order-delivered', [PurchaseOrderController::class, 'orderDelivered'])->middleware(['role:franchise','auth:api']);
+    Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('purchase-order/view', [PurchaseOrderController::class, 'purchaseOrderDetails'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('purchase-order/assign', [PurchaseOrderController::class, 'orderAssign'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('purchase-order/delivery', [PurchaseOrderController::class, 'orderDelivery'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('purchase-order/order-delivered', [PurchaseOrderController::class, 'orderDelivered'])->middleware(['role:franchise|cuttingCenter|retailer','auth:api']);
     Route::post('test', [PurchaseOrderController::class, 'solution']);
 
     Route::post('file/upload', [FileController::class,'upload']);
