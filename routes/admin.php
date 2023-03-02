@@ -65,7 +65,7 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('supplier/change-status', [SupplierController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
     Route::post('purchase-order/store', [PurchaseOrderController::class, 'store'])->middleware(['role:admin','auth:api']);
-    Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['role:admin','auth:api']);
+    Route::post('purchase-order/list', [PurchaseOrderController::class, 'purchaseOrderList'])->middleware(['auth:api']);
     Route::post('purchase-order/view', [PurchaseOrderController::class, 'purchaseOrderDetails'])->middleware(['role:admin','auth:api']);
     Route::post('purchase-order/assign', [PurchaseOrderController::class, 'orderAssign'])->middleware(['role:admin','auth:api']);
     Route::post('purchase-order/delivery', [PurchaseOrderController::class, 'orderDelivery'])->middleware(['role:admin','auth:api']);
