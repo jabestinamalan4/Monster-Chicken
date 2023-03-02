@@ -495,7 +495,7 @@ class PurchaseOrderController extends Controller
         return response($encryptedResponse, 200);
     }
 
-    public function orderDelivered(Request $request)
+    public function productReceived(Request $request)
     {
         if (gettype($request->input) == 'array') {
             $inputData = (object) $request->input;
@@ -506,7 +506,8 @@ class PurchaseOrderController extends Controller
 
         $rulesArray = [
             'purchaseOrderId' => 'required',
-            'status' => 'required'
+            'status' => 'required',
+            'productId' => 'required|array'
         ];
 
         if(isset($inputData->status) && $inputData->status !='Received')
@@ -532,57 +533,72 @@ class PurchaseOrderController extends Controller
 
         if($purchaseOrder->status==3)
         {
-            $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
-
-            if(isset($purchaseOrderItems))
+            foreach($inputData->productId as $product)
             {
-                foreach($purchaseOrderItems as $purchaseOrderItem)
+                $purchaseOrderItem = PurchaseOrderItem::where('product_id',$this->decryptId($product))
+                                    ->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
+
+                if(!isset($purchaseOrderItem->id))
                 {
-                    if($purchaseOrderItem->status==3)
+                    $response = ['status' => false, "message"=> ['Invalid Product Id'], "responseCode" => 422];
+                    $encryptedResponse['data'] = $this->encryptData($response);
+                    return response($encryptedResponse, 400);
+                }
+
+                if($purchaseOrderItem->status!=3)
+                {
+                    $response = ['status' => false, "message"=> ['Cannot change to purchase order Items status'], "responseCode" => 422];
+                    $encryptedResponse['data'] = $this->encryptData($response);
+                    return response($encryptedResponse, 400);
+                }
+            }
+
+            foreach($inputData->productId as $product)
+            {
+                $purchaseOrderItem = PurchaseOrderItem::where('product_id',$this->decryptId($product))->first();
+
+                if($purchaseOrderItem->status==3)
+                {
+                    if($inputData->status =='Received')
                     {
-                        $purchaseOrderToDelivered = PurchaseOrderItem::where('id',$purchaseOrderItem->id)->first();
-
-                        if($inputData->status == 'Received')
-                        {
-                            $purchaseOrderToDelivered->status = 4;
-                            $purchaseOrderToDelivered->save();
-                        }
-                        else{
-                            $purchaseOrderToDelivered->status = 5;
-                            $purchaseOrderToDelivered->change_quantity = $inputData->quantity;
-                            $purchaseOrderToDelivered->save();
-                        }
-
-                        if(isset($purchaseOrderToDelivered->id)){
-                            $branch = Branch::where('user_id',$purchaseOrder->user_id)->first();
-
-                            if(isset($inputData->status) && $inputData->status !='Received')
-                            {
-                                $quantity = $inputData->quantity;
-                            }
-                            else{
-                                $quantity = $purchaseOrderToDelivered->quantity;
-                            }
-
-                            $stock = new Stock;
-                            $stock->product_id  = $purchaseOrderItem->product_id;
-                            $stock->quantity    = $quantity;
-                            $stock->branch_id   = $branch->id;
-                            $stock->save();
-                        }
+                        $purchaseOrderItem->status = 4;
+                        $purchaseOrderItem->save();
                     }
                     else{
-                        $response = ['status' => false, "message"=> ['Can change to purchase order Items status'], "responseCode" => 422];
-                        $encryptedResponse['data'] = $this->encryptData($response);
-                        return response($encryptedResponse, 400);
+                        $purchaseOrderItem->change_quantity = $inputData->quantity;
+                        $purchaseOrderItem->status = 5;
+                        $purchaseOrderItem->save();
                     }
+
+                    if(isset($purchaseOrderToDelivered->id)){
+                        $branch = Branch::where('user_id',$purchaseOrder->user_id)->first();
+
+                        if(isset($inputData->status) && $inputData->status !='Received')
+                        {
+                            $quantity = $inputData->quantity;
+                        }
+                        else{
+                            $quantity = $purchaseOrderToDelivered->quantity;
+                        }
+
+                        $stock = new Stock;
+                        $stock->product_id  = $purchaseOrderItem->product_id;
+                        $stock->quantity    = $quantity;
+                        $stock->branch_id   = $branch->id;
+                        $stock->save();
+                    }
+                }
+                else{
+                    $response = ['status' => false, "message"=> ['Cannot change to purchase order Items status'], "responseCode" => 422];
+                    $encryptedResponse['data'] = $this->encryptData($response);
+                    return response($encryptedResponse, 400);
                 }
             }
         }
 
         else
         {
-            $response = ['status' => false, "message"=> ['Can change to purchase order status'], "responseCode" => 422];
+            $response = ['status' => false, "message"=> ['Cannot change to purchase order status'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
@@ -593,5 +609,42 @@ class PurchaseOrderController extends Controller
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
+    }
+
+    public function orderReceived(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+            'purchaseOrderId' => 'required',
+        ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->first();
+
+        if(!isset($purchaseOrder->id)) {
+            $response = ['status' => false, "message"=> ['Invalid PurchaseOrder Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
+
+        foreach($purchaseOrderItems as $purchaseOrderItem)
+        {
+            
+        }
     }
 }
