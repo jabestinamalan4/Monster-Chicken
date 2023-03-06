@@ -10,6 +10,8 @@ use App\Models\Stock;
 use Illuminate\Http\Request;
 use App\Models\PurchaseOrder;
 use App\Models\ProductCategory;
+use App\Models\PurchaseOrderStatus;
+use App\Models\PurchaseOrderItemsStatus;
 use App\Http\Traits\HelperTrait;
 use App\Models\PurchaseOrderItem;
 use App\Http\Controllers\Controller;
@@ -286,11 +288,12 @@ class PurchaseOrderController extends Controller
             $purchaseOrderItemArray  = [];
 
             foreach($purchaseOrderItems as $purchaseOrderItem) {
-
                 $purchaseOrderItemList   = [];
                 $productArray            = [];
 
                 $product = Product::where('id',$purchaseOrderItem->product_id)->first();
+
+                $purchaseOrderItemsStatus = PurchaseOrderItemsStatus::where('status',$purchaseOrderItem->status)->first();
 
                 if(isset($product->id)) {
                     $productList         = [];
@@ -318,6 +321,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItemList['product']  = (object) $productList;
                 $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
                 $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
+                $purchaseOrderItemList['statusName']   = isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
@@ -331,17 +335,23 @@ class PurchaseOrderController extends Controller
                 $changeOutForDelivery    = false;
             }
 
+            if(isset($purchaseOrder->status))
+            {
+                $purchaseOrderStatus = PurchaseOrderStatus::where('status',$purchaseOrder->status)->first();
+            }
+
             $purchaseOrderList['id']      = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']    = (object) $userList;
             $purchaseOrderList['note']    = $purchaseOrder->note;
             $purchaseOrderList['supplier']= (object) $supplierList;
-            $purchaseOrderList['status']  = $purchaseOrder->status;
+            $purchaseOrderList['status']  = $purchaseOrderStatus->status;
+            $purchaseOrderList['statusName']  = isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name : "";
 
-            if($purchaseOrder->status == 0) {
-                $purchaseOrderList['statusName']  = 'Requested';
-            }else {
-                $purchaseOrderList['statusName']  = 'Pending';
-            }
+           // if($purchaseOrder->status == 0) {
+            //  $purchaseOrderList['statusName']  = 'Requested';
+            //}else {
+            //    $purchaseOrderList['statusName']  = 'Pending';
+            //}
 
             $purchaseOrderList['items']   = $purchaseOrderItemArray;
             $purchaseOrderList['changeOutForDelivery']  = $changeOutForDelivery;

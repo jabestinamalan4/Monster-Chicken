@@ -255,6 +255,7 @@ class UserManagementController extends Controller
             $rolesList  = [];
             $rolesArray = [];
             $branchList = [];
+            $adminList  = [];
 
             $admin = User::where('id',$user->admin_id)->first();
 
