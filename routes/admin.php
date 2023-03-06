@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\FeedController;
+use App\Http\Controllers\Admin\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,5 +86,10 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('feed/view', [FeedController::class, 'feedDetails'])->middleware(['role:admin','auth:api']);
     Route::post('feed/get-feeds', [FeedController::class, 'getFeeds'])->middleware(['role:admin','auth:api']);
     Route::post('feed/change-status', [FeedController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
+
+    Route::post('order/list', [OrderController::class,'orderList']);
+    Route::post('order/view', [OrderController::class,'orderDetails']);
+    Route::post('order/user-list', [OrderController::class,'userList']);
+    Route::post('order/assign', [OrderController::class,'orderAssign']);
 
 });

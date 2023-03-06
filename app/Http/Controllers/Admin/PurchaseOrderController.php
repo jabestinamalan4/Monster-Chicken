@@ -698,4 +698,5 @@ class PurchaseOrderController extends Controller
         return response($encryptedResponse, 200);
 
     }
+
 }
