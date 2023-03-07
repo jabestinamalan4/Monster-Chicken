@@ -35,6 +35,14 @@ class PurchaseOrderController extends Controller
 
         $rulesArray = ['productData' => 'required|array'];
 
+        $roleName = auth()->user()->getRoleNames()->toArray();
+        $role     = implode(" ",$rolesName);
+
+        if($role[0]=='admin')
+        {
+            $rulesArray['branchId']  = 'required';
+        }
+
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
         if($validatedData->fails()) {
@@ -102,8 +110,18 @@ class PurchaseOrderController extends Controller
             }
         }
         else{
+
+            if(isset($inputData->branchId))
+            {
+                $user = Branch::where('id',$inputData->branchId)->where('status',1)->first();
+
+            }
             $purchaseOrder = new PurchaseOrder;
 
+            if(isset($inputData->branchId))
+            {
+
+            }
             $purchaseOrder->user_id   = auth()->user()->id;
             $purchaseOrder->status    = 0;
             $purchaseOrder->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
@@ -345,11 +363,11 @@ class PurchaseOrderController extends Controller
 
             if(isset($purchaseOrder->user_id))
             {
-                if($purchaseOrder->user_id==Auth()->user()->id)  {
-                    $editLable = true;
+                if($purchaseOrder->user_id == auth()->user()->id)  {
+                    $editAble = true;
                 }
                 else{
-                    $editLable = false;
+                    $editAble = false;
                 }
             }
 
@@ -362,7 +380,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList['created_at']            = date("Y-m-d", strtotime($purchaseOrder->created_at));
             $purchaseOrderList['items']                 = $purchaseOrderItemArray;
             $purchaseOrderList['changeOutForDelivery']  = $changeOutForDelivery;
-            $purchaseOrderList['editLabel']             = $editLable;
+            $purchaseOrderList['editAble']              = $editAble;
         }
 
          $response['status'] = true;

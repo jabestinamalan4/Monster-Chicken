@@ -390,7 +390,10 @@ class UserManagementController extends Controller
 
         $totalCount = $query->count();
 
+        $query = $query->where('status',1);
+
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
+
 
         $usersArray = [];
 
@@ -399,24 +402,46 @@ class UserManagementController extends Controller
             $rolesList  = [];
             $rolesArray = [];
 
-            $admin = User::where('id',$user->admin_id)->first();
-
             $rolesName = $user->getRoleNames()->toArray();
+            $role      = implode(" ",$rolesName);
 
-            $userList['id']     = $this->encryptId($user->id);
-            $userList['name']   = $user->name;
-            $userList['email']  = $user->email;
-            $userList['number'] = $user->number;
-            $userList['status'] = $user->status;
+            if(isset($inputData->purchaseOrderList) && $inputData->purchaseOrderList==true){
+                if($user->admin_id == auth()->user()->id){
+                    $userList['id']     = $this->encryptId($user->id);
+                    $userList['name']   = $user->name;
+                    $userList['email']  = $user->email;
+                    $userList['number'] = $user->number;
+                    $userList['status'] = $user->status;
 
-            $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
-            $rolesList['value'] = implode(" ",$rolesName);
+                    $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                    $rolesList['value'] = implode(" ",$rolesName);
 
-            array_push($rolesArray,$rolesList);
+                    array_push($rolesArray,$rolesList);
 
-            $userList['role']   = $rolesArray;
+                    $userList['role']   = $rolesArray;
 
-            array_push($usersArray,(object) $userList);
+                    array_push($usersArray,(object) $userList);
+                }
+            }
+            else{
+                if($role!='franchise')
+                {
+                    $userList['id']     = $this->encryptId($user->id);
+                    $userList['name']   = $user->name;
+                    $userList['email']  = $user->email;
+                    $userList['number'] = $user->number;
+                    $userList['status'] = $user->status;
+
+                    $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                    $rolesList['value'] = implode(" ",$rolesName);
+
+                    array_push($rolesArray,$rolesList);
+
+                    $userList['role']   = $rolesArray;
+
+                    array_push($usersArray,(object) $userList);
+                }
+            }
         }
 
         $response['status'] = true;
@@ -585,15 +610,16 @@ class UserManagementController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $userArray = [];
+        $userArray   = [];
 
         if(isset($user->id))
         {
-            $userList  = [];
-            $rolesList = [];
-            $rolesArray = [];
+            $userList    = [];
+            $rolesList   = [];
+            $rolesArray  = [];
             $branchArray = [];
             $adminArray  = [];
+            $branchList  = [];
 
             $rolesName = $user->getRoleNames()->toArray();
 
@@ -605,7 +631,6 @@ class UserManagementController extends Controller
                 $branch = Branch::where('user_id',$user->id)->first();
 
                 if(isset($branch->id)) {
-                    $branchList  = [];
                     $stateArray  = [];
 
                     if(isset($branch->state)) {

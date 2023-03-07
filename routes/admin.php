@@ -50,12 +50,12 @@ Route::group(['middleware'=>['decrypt']], function(){
 
     Route::post('price/store', [PriceController::class, 'store'])->middleware(['role:admin','auth:api']);
 
-    Route::post('user/store', [UserManagementController::class, 'store'])->middleware(['role:admin','auth:api']);
-    Route::post('user/list', [UserManagementController::class, 'userList'])->middleware(['role:admin','auth:api']);
-    Route::post('user/get-users', [UserManagementController::class, 'getUsers'])->middleware(['role:admin','auth:api']);
-    Route::post('user/profile', [UserManagementController::class,'profile'])->middleware(['role:admin','auth:api']);
-    Route::post('user/view', [UserManagementController::class, 'userDetails'])->middleware(['role:admin','auth:api']);
-    Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
+    Route::post('user/store', [UserManagementController::class, 'store'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('user/list', [UserManagementController::class, 'userList'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('user/get-users', [UserManagementController::class, 'getUsers'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('user/profile', [UserManagementController::class,'profile'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('user/view', [UserManagementController::class, 'userDetails'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
+    Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin|franchise|cuttingCenter|retailer','auth:api']);
 
     Route::post('customer/list', [UserManagementController::class,'customerList'])->middleware(['role:admin','auth:api']);
 
