@@ -324,7 +324,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
                 $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
                 $purchaseOrderItemList['statusName']= isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
-                $purchaseOrderItemList['created_at']= date("Y-m-d", strtotime($purchaseOrderItemsStatus->created_at));
+                $purchaseOrderItemList['created_at']= date("Y-m-d", strtotime($purchaseOrderItem->created_at));
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
