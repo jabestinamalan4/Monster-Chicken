@@ -33,15 +33,10 @@ class PurchaseOrderController extends Controller
 
         $inputUser = auth()->user();
 
-        $rulesArray = ['productData' => 'required|array'];
-
-        $roleName = auth()->user()->getRoleNames()->toArray();
-        $role     = implode(" ",$rolesName);
-
-        if($role[0]=='admin')
-        {
-            $rulesArray['branchId']  = 'required';
-        }
+        $rulesArray = [
+            'productData' => 'required|array',
+            'userId'      => 'required'
+        ];
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
@@ -57,6 +52,17 @@ class PurchaseOrderController extends Controller
 
             if(!isset($supplier->id)) {
                 $response = ['status' => false, "message"=> ['Invalid Supplier Id.'], "responseCode" => 422];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
+        }
+
+        if(isset($inputData->userId)) {
+
+            $user = User::where('id',$this->decryptId($inputData->userId))->where('status',1)->first();
+
+            if(!isset($user->id)) {
+                $response = ['status' => false, "message"=> ['Invalid User Id.'], "responseCode" => 422];
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
@@ -110,21 +116,12 @@ class PurchaseOrderController extends Controller
             }
         }
         else{
-
-            if(isset($inputData->branchId))
-            {
-                $user = Branch::where('id',$inputData->branchId)->where('status',1)->first();
-
-            }
             $purchaseOrder = new PurchaseOrder;
 
-            if(isset($inputData->branchId))
-            {
-
-            }
-            $purchaseOrder->user_id   = auth()->user()->id;
-            $purchaseOrder->status    = 0;
-            $purchaseOrder->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
+            $purchaseOrder->user_id      = $this->decryptId($inputData->userId);
+            $purchaseOrder->created_by   = auth()->user()->id;
+            $purchaseOrder->status       = 0;
+            $purchaseOrder->supplier_id  = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
         }
 
         $purchaseOrder->note      = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
@@ -203,6 +200,7 @@ class PurchaseOrderController extends Controller
             $userList            = [];
             $userArray           = [];
             $supplierList        = [];
+            $createdByList       = [];
 
             $user = User::where('id',$purchaseOrder->user_id)->first();
 
@@ -226,13 +224,24 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderStatus = PurchaseOrderStatus::where('status',$purchaseOrder->status)->first();
             }
 
+            if(isset($purchaseOrder->created_by))
+            {
+                $createdBy = User::where('id',$purchaseOrder->created_by)->where('status',1)->first();
+
+                $createdByList['id']    = $this->encryptId($createdBy->id);
+                $createdByList['name']  = $createdBy->name;
+                $createdByList['email'] = $createdBy->email;
+                $createdByList['number']= $createdBy->number;
+            }
+
             $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']      = (object) $userList;
             $purchaseOrderList['note']      = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
             $purchaseOrderList['supplier']  = (object) $supplierList;
             $purchaseOrderList['status']    = $purchaseOrder->status;
             $purchaseOrderList['statusName']= isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name:"" ;
-            $purchaseOrderList['created_at']= date("Y-m-d", strtotime($purchaseOrder->created_at));
+            $purchaseOrderList['createdAt'] = date("Y-m-d", strtotime($purchaseOrder->created_at));
+            $purchaseOrderList['createdBy'] = $createdByList;
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }
@@ -281,6 +290,7 @@ class PurchaseOrderController extends Controller
 
         if(isset($purchaseOrder->id)) {
             $purchaseOrderList   = [];
+            $createdByList       = [];
 
             $user = User::where('id',$purchaseOrder->user_id)->first();
 
@@ -342,7 +352,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
                 $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
                 $purchaseOrderItemList['statusName']= isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
-                $purchaseOrderItemList['created_at']= date("Y-m-d", strtotime($purchaseOrderItem->created_at));
+                $purchaseOrderItemList['createdAt']= date("Y-m-d", strtotime($purchaseOrderItem->created_at));
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
@@ -371,13 +381,24 @@ class PurchaseOrderController extends Controller
                 }
             }
 
+            if(isset($purchaseOrder->created_by))
+            {
+                $createdBy = User::where('id',$purchaseOrder->created_by)->where('status',1)->first();
+
+                $createdByList['id']    = $this->encryptId($createdBy->id);
+                $createdByList['name']  = $createdBy->name;
+                $createdByList['email'] = $createdBy->email;
+                $createdByList['number']= $createdBy->number;
+            }
+
             $purchaseOrderList['id']                    = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']                  = (object) $userList;
             $purchaseOrderList['note']                  = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
             $purchaseOrderList['supplier']              = (object) $supplierList;
             $purchaseOrderList['status']                = $purchaseOrder->status;
             $purchaseOrderList['statusName']            = isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name : "";
-            $purchaseOrderList['created_at']            = date("Y-m-d", strtotime($purchaseOrder->created_at));
+            $purchaseOrderList['createdAt']             = date("Y-m-d", strtotime($purchaseOrder->created_at));
+            $purchaseOrderList['createdBy']             = $createdByList;
             $purchaseOrderList['items']                 = $purchaseOrderItemArray;
             $purchaseOrderList['changeOutForDelivery']  = $changeOutForDelivery;
             $purchaseOrderList['editAble']              = $editAble;
@@ -423,7 +444,7 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $supplier = Supplier::where('id',$this->decryptId($inputData->supplierId))->first();
+        $supplier = Supplier::where('id',$this->decryptId($inputData->supplierId))->where('status',1)->first();
 
         if(!isset($supplier->id)) {
             $response = ['status' => false, "message"=> ['Invalid Supplier Id.'], "responseCode" => 422];
@@ -443,7 +464,8 @@ class PurchaseOrderController extends Controller
                     return response($encryptedResponse, 400);
                 }
 
-                $isExistPurchaseOrder = PurchaseOrderItem::where('product_id',$this->decryptId($product))->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
+                $isExistPurchaseOrder = PurchaseOrderItem::where('product_id',$this->decryptId($product))
+                ->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
 
                 if(!isset($isExistPurchaseOrder->id)) {
                     $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];
