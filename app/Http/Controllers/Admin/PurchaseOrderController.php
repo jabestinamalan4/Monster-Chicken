@@ -234,14 +234,15 @@ class PurchaseOrderController extends Controller
                 $createdByList['number']= $createdBy->number;
             }
 
-            $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
-            $purchaseOrderList['user']      = (object) $userList;
-            $purchaseOrderList['note']      = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
-            $purchaseOrderList['supplier']  = (object) $supplierList;
-            $purchaseOrderList['status']    = $purchaseOrder->status;
-            $purchaseOrderList['statusName']= isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name:"" ;
-            $purchaseOrderList['createdAt'] = date("Y-m-d", strtotime($purchaseOrder->created_at));
-            $purchaseOrderList['createdBy'] = $createdByList;
+            $purchaseOrderList['id']            = $this->encryptId($purchaseOrder->id);
+            $purchaseOrderList['uniqueId']      = $this->encryptId($purchaseOrder->id);
+            $purchaseOrderList['user']          = (object) $userList;
+            $purchaseOrderList['note']          = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
+            $purchaseOrderList['supplier']      = (object) $supplierList;
+            $purchaseOrderList['status']        = $purchaseOrder->status;
+            $purchaseOrderList['statusName']    = isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name:"" ;
+            $purchaseOrderList['createdAt']     = date("Y-m-d", strtotime($purchaseOrder->created_at));
+            $purchaseOrderList['createdBy']     = $createdByList;
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }

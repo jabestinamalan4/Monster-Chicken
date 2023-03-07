@@ -424,7 +424,7 @@ class UserManagementController extends Controller
                 }
             }
             else{
-                if($role!='franchise')
+                if($role=='cuttingCenter' || $role=='retailer')
                 {
                     $userList['id']     = $this->encryptId($user->id);
                     $userList['name']   = $user->name;
