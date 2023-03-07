@@ -362,7 +362,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrderList['created_at']            = date("Y-m-d", strtotime($purchaseOrder->created_at));
             $purchaseOrderList['items']                 = $purchaseOrderItemArray;
             $purchaseOrderList['changeOutForDelivery']  = $changeOutForDelivery;
-            $purchaseOrderList['edit_label']            = $editLable;
+            $purchaseOrderList['editLabel']             = $editLable;
         }
 
          $response['status'] = true;
