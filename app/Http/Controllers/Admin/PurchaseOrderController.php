@@ -203,17 +203,18 @@ class PurchaseOrderController extends Controller
                 $supplierList['name']  = $supplier->name;
             }
 
+            if(isset($purchaseOrder->status))
+            {
+                $purchaseOrderStatus = PurchaseOrderStatus::where('status',$purchaseOrder->status)->first();
+            }
+
             $purchaseOrderList['id']        = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']      = (object) $userList;
-            $purchaseOrderList['note']      = $purchaseOrder->note;
+            $purchaseOrderList['note']      = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
             $purchaseOrderList['supplier']  = (object) $supplierList;
             $purchaseOrderList['status']    = $purchaseOrder->status;
-
-            if($purchaseOrder->status == 0) {
-                $purchaseOrderList['statusName']  = 'Requested';
-            }else {
-                $purchaseOrderList['statusName']  = 'Pending';
-            }
+            $purchaseOrderList['statusName']= isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name:"" ;
+            $purchaseOrderList['created_at']= date("Y-m-d", strtotime($purchaseOrder->created_at));
 
             array_push($purchaseOrderArray,(object) $purchaseOrderList);
         }
@@ -318,10 +319,12 @@ class PurchaseOrderController extends Controller
                     $productList['image']         = $imageArray;
                 }
                 $purchaseOrderItemList['id']       = $this->encryptId($purchaseOrderItem->id);
+                $purchaseOrderItemList['uniqueId'] = $this->encryptId($purchaseOrderItem->purchase_order_id);
                 $purchaseOrderItemList['product']  = (object) $productList;
                 $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
                 $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
-                $purchaseOrderItemList['statusName']   = isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
+                $purchaseOrderItemList['statusName']= isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
+                $purchaseOrderItemList['created_at']= date("Y-m-d", strtotime($purchaseOrderItemsStatus->created_at));
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
@@ -340,21 +343,26 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderStatus = PurchaseOrderStatus::where('status',$purchaseOrder->status)->first();
             }
 
-            $purchaseOrderList['id']      = $this->encryptId($purchaseOrder->id);
-            $purchaseOrderList['user']    = (object) $userList;
-            $purchaseOrderList['note']    = $purchaseOrder->note;
-            $purchaseOrderList['supplier']= (object) $supplierList;
-            $purchaseOrderList['status']  = $purchaseOrderStatus->status;
-            $purchaseOrderList['statusName']  = isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name : "";
+            if(isset($purchaseOrder->user_id))
+            {
+                if($purchaseOrder->user_id==Auth()->user()->id)  {
+                    $editLable = true;
+                }
+                else{
+                    $editLable = false;
+                }
+            }
 
-           // if($purchaseOrder->status == 0) {
-            //  $purchaseOrderList['statusName']  = 'Requested';
-            //}else {
-            //    $purchaseOrderList['statusName']  = 'Pending';
-            //}
-
-            $purchaseOrderList['items']   = $purchaseOrderItemArray;
+            $purchaseOrderList['id']                    = $this->encryptId($purchaseOrder->id);
+            $purchaseOrderList['user']                  = (object) $userList;
+            $purchaseOrderList['note']                  = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
+            $purchaseOrderList['supplier']              = (object) $supplierList;
+            $purchaseOrderList['status']                = $purchaseOrder->status;
+            $purchaseOrderList['statusName']            = isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name : "";
+            $purchaseOrderList['created_at']            = date("Y-m-d", strtotime($purchaseOrder->created_at));
+            $purchaseOrderList['items']                 = $purchaseOrderItemArray;
             $purchaseOrderList['changeOutForDelivery']  = $changeOutForDelivery;
+            $purchaseOrderList['edit_label']            = $editLable;
         }
 
          $response['status'] = true;
@@ -498,7 +506,7 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->first();
 
-            $purchaseOrder->status = 3;
+            $purchaseOrder->status = 2;
             $purchaseOrder->save();
         }
 
@@ -546,7 +554,7 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        if($purchaseOrder->status==3)
+        if($purchaseOrder->status==2)
         {
             foreach($inputData->productId as $product)
             {
@@ -570,7 +578,8 @@ class PurchaseOrderController extends Controller
 
             foreach($inputData->productId as $product)
             {
-                $purchaseOrderItem = PurchaseOrderItem::where('product_id',$this->decryptId($product))->first();
+                $purchaseOrderItem = PurchaseOrderItem::where('product_id',$this->decryptId($product))
+                                    ->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
 
                 if($purchaseOrderItem->status==3)
                 {
@@ -663,7 +672,7 @@ class PurchaseOrderController extends Controller
                 {
                     if($purchaseOrderItem->status==5)
                     {
-                        $status = 5;
+                        $status = 4;
 
                         $purchaseOrder->status = $status;
                         $purchaseOrder->save();
@@ -676,7 +685,7 @@ class PurchaseOrderController extends Controller
                         return response($encryptedResponse, 200);
                     }
                     else{
-                        $status = 4;
+                        $status = 3;
                     }
                 }
 

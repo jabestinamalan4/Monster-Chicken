@@ -57,6 +57,8 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('user/view', [UserManagementController::class, 'userDetails'])->middleware(['role:admin','auth:api']);
     Route::post('user/change-status', [UserManagementController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
+    Route::post('customer/list', [UserManagementController::class,'customerList'])->middleware(['role:admin','auth:api']);
+
     Route::post('branch/list', [UserManagementController::class,'branchList'])->middleware(['role:admin','auth:api']);
 
     Route::post('supplier/store', [SupplierController::class, 'store'])->middleware(['role:admin','auth:api']);

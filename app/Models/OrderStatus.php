@@ -9,5 +9,5 @@ class OrderStatus extends Model
 {
     use HasFactory;
 
-    protected $table = 'order_status';
+    protected $table = 'order_statuses';
 }
