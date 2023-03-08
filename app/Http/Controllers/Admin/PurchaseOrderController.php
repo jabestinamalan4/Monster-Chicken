@@ -40,7 +40,7 @@ class PurchaseOrderController extends Controller
         $rolesName = auth()->user()->getRoleNames()->toArray();
         $role      = implode(" ",$rolesName);
 
-        if($role!='cuttingCenter' || $role!='retailer')
+        if($role!='cuttingCenter' && $role!='retailer')
         {
             $rulesArray['userId'] = 'required';
         }
@@ -133,7 +133,6 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrder->created_by   = auth()->user()->id;
             $purchaseOrder->status       = 0;
-            $purchaseOrder->supplier_id  = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
         }
 
         $purchaseOrder->note      = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
@@ -153,9 +152,9 @@ class PurchaseOrderController extends Controller
                 $itemData = new PurchaseOrderItem;
 
                 $itemData->purchase_order_id = $purchaseOrder->id;
-                $itemData->product_id = $item->id;
-                $itemData->supplier_id = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
-                $itemData->status = 1;
+                $itemData->product_id        = $item->id;
+                $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
+                $itemData->status            = 1;
             }
 
             $itemData->quantity = $item->quantity;
@@ -417,16 +416,16 @@ class PurchaseOrderController extends Controller
             {
                 $createdAtEditAccess= null;
                 $adminEditAccess    = null;
-                $rolesName          = $createdBy->getRoleNames()->toArray();
+                $rolesName          = auth()->user()->getRoleNames()->toArray();
                 $role               = implode(" ",$rolesName);
 
                 $createdByEditAccess = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('created_by',auth()->user()->id)->first();
 
-                if(($role=='cuttingCenter' || $role=='retailer') && $createdByEditAccess->id==null) {
+                if(($role=='cuttingCenter' || $role=='retailer') && (!isset($createdByEditAccess->id))) {
                     $createdAtEditAccess = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('user_id',auth()->user()->id)->first();
                 }
 
-                if(($role=='admin' || $role=='franchise') && isset($createdByEditAccess->id)) {
+                if(($role=='admin' || $role=='franchise') && (!isset($createdByEditAccess->id))) {
                     $adminId  = User::where('id',$purchaseOrder->user_id)->first();
 
                     if($adminId->admin_id==auth()->user()->id)
@@ -435,7 +434,7 @@ class PurchaseOrderController extends Controller
                     }
                 }
 
-                    if(isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1)  {
+                    if((isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1))  {
                         $editAble = true;
                     }
                     else{
@@ -589,10 +588,12 @@ class PurchaseOrderController extends Controller
 
         if(isset($purchaseOrderItems))
         {
-            foreach($purchaseOrderItems as $purchaseOrderItems)
+            foreach($purchaseOrderItems as $purchaseOrderItem)
             {
-                $purchaseOrderItems->status = 3;
-                $purchaseOrderItems->save();
+                $purchaseOrderItemList  = PurchaseOrderItem::where('id',$purchaseOrderItem->id)->first();
+
+                $purchaseOrderItemList->status = 3;
+                $purchaseOrderItemList->save();
             }
 
             $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->first();
