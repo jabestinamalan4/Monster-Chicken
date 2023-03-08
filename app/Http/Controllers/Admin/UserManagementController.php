@@ -760,7 +760,7 @@ class UserManagementController extends Controller
                 if(isset($customerDetails->id))
                 {
                     $customerDetailList['name']     = $customerDetails->first_name.' '.$customerDetails->last_name;
-                    $customerDetailList['address']  = $customerDetails->address.','.$customerDetails->city.','.$state->state.'-'.$customerDetails->pin;
+                    $customerDetailList['address']  = $customerDetails->address.','.$customerDetails->city.','.(isset($state->id) ? $state->state:'').'-'.$customerDetails->pin;
                 }
 
                 $userList['customerDetail']= (object)$customerDetailList;
