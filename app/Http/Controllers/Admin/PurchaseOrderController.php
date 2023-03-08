@@ -298,11 +298,18 @@ class PurchaseOrderController extends Controller
             if(isset($user->id)) {
                 $userList            = [];
                 $userArray           = [];
+                $rolesList           = [];
+
+                $rolesName = $user->getRoleNames()->toArray();
+
+                $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                $rolesList['value'] = implode(" ",$rolesName);
 
                 $userList['userId']      = $this->encryptId($user->id);
                 $userList['userName']    = $user->name;
                 $userList['userEmail']   = $user->email;
                 $userList['userNumber']  = $user->number;
+                $userList['userRole']    = $rolesList;
             }
 
             $supplier = Supplier::where('id',$purchaseOrder->supplier_id)->first();
@@ -384,12 +391,20 @@ class PurchaseOrderController extends Controller
 
             if(isset($purchaseOrder->created_by))
             {
+                $rolesList = [];
+
                 $createdBy = User::where('id',$purchaseOrder->created_by)->where('status',1)->first();
+
+                $rolesName = $createdBy->getRoleNames()->toArray();
+
+                $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                $rolesList['value'] = implode(" ",$rolesName);
 
                 $createdByList['id']    = $this->encryptId($createdBy->id);
                 $createdByList['name']  = $createdBy->name;
                 $createdByList['email'] = $createdBy->email;
                 $createdByList['number']= $createdBy->number;
+                $createdByList['role']  = $rolesList;
             }
 
             $purchaseOrderList['id']                    = $this->encryptId($purchaseOrder->id);

@@ -84,6 +84,18 @@ class OrderController extends Controller
             $inputData = $request->input;
         }
 
+        $rulesArray = [
+            'orderId' => 'required'
+        ];
+
+        $validatedData = Validator::make((array)$inputData, $rulesArray);
+
+        if($validatedData->fails()) {
+            $response = ['status' => false, "message"=> [$validatedData->errors()->first()], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
         $order = Order::where('id',$this->decryptId($inputData->orderId))->first();
 
         if (!isset($order->id)) {
