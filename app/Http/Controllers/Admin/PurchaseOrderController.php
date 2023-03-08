@@ -381,7 +381,7 @@ class PurchaseOrderController extends Controller
 
             if(isset($purchaseOrder->user_id))
             {
-                if($purchaseOrder->user_id == auth()->user()->id)  {
+                if($purchaseOrder->created_by == auth()->user()->id)  {
                     $editAble = true;
                 }
                 else{
