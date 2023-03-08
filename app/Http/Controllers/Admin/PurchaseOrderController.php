@@ -434,7 +434,7 @@ class PurchaseOrderController extends Controller
                     }
                 }
 
-                    if((isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1))  {
+                    if((isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1) && $purchaseOrder->status<=1)  {
                         $editAble = true;
                     }
                     else{
@@ -485,6 +485,13 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
+        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('status',0)->first();
+
+        if (!isset($purchaseOrder->id)) {
+            $response = ['status' => false, "message"=> ['Invalid Purchase Order Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
 
         $isExistPurchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
 
@@ -552,14 +559,22 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItems->save();
             }
 
+            $validCheckAllOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->where('status',1)->first();
+
+            if(!isset($validCheckAllOrderItems))
+            {
+                $purchaseOrder->status  = 1;
+                $purchaseOrder->save();
+            }
+
+        }
+
         $response['status'] = true;
         $response["message"] = ['Assigned successfully.'];
         $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
-
-        }
     }
 
     public function orderDelivery(Request $request)
