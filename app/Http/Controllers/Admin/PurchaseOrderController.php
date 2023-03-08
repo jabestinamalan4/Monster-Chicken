@@ -559,9 +559,9 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItems->save();
             }
 
-            $validCheckAllOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->where('status',1)->first();
+            $validCheckAllOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->where('status',1)->get();
 
-            if(!isset($validCheckAllOrderItems))
+            if(!isset($validCheckAllOrderItems->id))
             {
                 $purchaseOrder->status  = 1;
                 $purchaseOrder->save();
