@@ -34,9 +34,16 @@ class PurchaseOrderController extends Controller
         $inputUser = auth()->user();
 
         $rulesArray = [
-            'productData' => 'required|array',
-            'userId'      => 'required'
+            'productData' => 'required|array'
         ];
+
+        $rolesName = auth()->user()->getRoleNames()->toArray();
+        $role      = implode(" ",$rolesName);
+
+        if($role!='cuttingCenter' || $role!='retailer')
+        {
+            $rulesArray['userId'] = 'required';
+        }
 
         $validatedData = Validator::make((array)$inputData, $rulesArray);
 
@@ -117,8 +124,13 @@ class PurchaseOrderController extends Controller
         }
         else{
             $purchaseOrder = new PurchaseOrder;
+            if($role=='cuttingCenter' || $role=='retailer') {
+                $purchaseOrder->user_id      = auth()->user()->id;
+            }
+            else{
+                $purchaseOrder->user_id      = $this->decryptId($inputData->userId);
+            }
 
-            $purchaseOrder->user_id      = $this->decryptId($inputData->userId);
             $purchaseOrder->created_by   = auth()->user()->id;
             $purchaseOrder->status       = 0;
             $purchaseOrder->supplier_id  = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
@@ -312,14 +324,6 @@ class PurchaseOrderController extends Controller
                 $userList['userRole']    = $rolesList;
             }
 
-            $supplier = Supplier::where('id',$purchaseOrder->supplier_id)->first();
-
-            if(isset($supplier->id))
-            {
-                $supplierList['id']    = $this->encryptId($supplier->id);
-                $supplierList['name']  = $supplier->name;
-            }
-
             $purchaseOrderItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->get();
 
             $purchaseOrderItemArray  = [];
@@ -335,6 +339,7 @@ class PurchaseOrderController extends Controller
                 if(isset($product->id)) {
                     $productList         = [];
                     $imageArray          = [];
+                    $supplierList        = [];
 
                     foreach((array)json_decode($product->image_url) as $imageUrl){
                         $imageList  = [];
@@ -354,13 +359,24 @@ class PurchaseOrderController extends Controller
                     $productList['discountPrice'] = $product->discount_price;
                     $productList['image']         = $imageArray;
                 }
-                $purchaseOrderItemList['id']       = $this->encryptId($purchaseOrderItem->id);
-                $purchaseOrderItemList['uniqueId'] = $this->encryptId($purchaseOrderItem->purchase_order_id);
-                $purchaseOrderItemList['product']  = (object) $productList;
-                $purchaseOrderItemList['quantity'] = $purchaseOrderItem->quantity;
-                $purchaseOrderItemList['status']   = $purchaseOrderItem->status;
+
+                if(isset($purchaseOrderItem->supplier_id)) {
+                    $supplier = Supplier::where('id',$purchaseOrderItem->supplier_id)->first();
+
+                    if(isset($supplier->id))
+                    {
+                        $supplierList['id']    = $this->encryptId($supplier->id);
+                        $supplierList['name']  = $supplier->name;
+                    }
+                }
+
+                $purchaseOrderItemList['id']        = $this->encryptId($purchaseOrderItem->id);
+                $purchaseOrderItemList['product']   = (object) $productList;
+                $purchaseOrderItemList['supplier']  = (object) $supplierList;
+                $purchaseOrderItemList['quantity']  = $purchaseOrderItem->quantity;
+                $purchaseOrderItemList['status']    = $purchaseOrderItem->status;
                 $purchaseOrderItemList['statusName']= isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
-                $purchaseOrderItemList['createdAt']= date("Y-m-d", strtotime($purchaseOrderItem->created_at));
+                $purchaseOrderItemList['createdAt'] = date("Y-m-d", strtotime($purchaseOrderItem->created_at));
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
@@ -377,16 +393,6 @@ class PurchaseOrderController extends Controller
             if(isset($purchaseOrder->status))
             {
                 $purchaseOrderStatus = PurchaseOrderStatus::where('status',$purchaseOrder->status)->first();
-            }
-
-            if(isset($purchaseOrder->user_id))
-            {
-                if($purchaseOrder->created_by == auth()->user()->id)  {
-                    $editAble = true;
-                }
-                else{
-                    $editAble = false;
-                }
             }
 
             if(isset($purchaseOrder->created_by))
@@ -407,10 +413,39 @@ class PurchaseOrderController extends Controller
                 $createdByList['role']  = $rolesList;
             }
 
+            if(isset($purchaseOrder->user_id))
+            {
+                $createdAtEditAccess= null;
+                $adminEditAccess    = null;
+                $rolesName          = $createdBy->getRoleNames()->toArray();
+                $role               = implode(" ",$rolesName);
+
+                $createdByEditAccess = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('created_by',auth()->user()->id)->first();
+
+                if(($role=='cuttingCenter' || $role=='retailer') && $createdByEditAccess->id==null) {
+                    $createdAtEditAccess = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('user_id',auth()->user()->id)->first();
+                }
+
+                if(($role=='admin' || $role=='franchise') && $createdByEditAccess->id==null) {
+                    $adminId  = User::where('id',$purchaseOrder->user_id)->first();
+
+                    if($adminId->admin_id==auth()->user()->id)
+                    {
+                        $adminEditAccess  = 1;
+                    }
+                }
+
+                    if(isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1)  {
+                        $editAble = true;
+                    }
+                    else{
+                        $editAble = false;
+                    }
+            }
+
             $purchaseOrderList['id']                    = $this->encryptId($purchaseOrder->id);
             $purchaseOrderList['user']                  = (object) $userList;
             $purchaseOrderList['note']                  = isset($purchaseOrder->note) && $purchaseOrder->note!= null? $purchaseOrder->note:'-';
-            $purchaseOrderList['supplier']              = (object) $supplierList;
             $purchaseOrderList['status']                = $purchaseOrder->status;
             $purchaseOrderList['statusName']            = isset($purchaseOrderStatus->id) ? $purchaseOrderStatus->name : "";
             $purchaseOrderList['createdAt']             = date("Y-m-d", strtotime($purchaseOrder->created_at));
