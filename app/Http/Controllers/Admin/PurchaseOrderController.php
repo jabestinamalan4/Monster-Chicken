@@ -426,7 +426,7 @@ class PurchaseOrderController extends Controller
                     $createdAtEditAccess = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('user_id',auth()->user()->id)->first();
                 }
 
-                if(($role=='admin' || $role=='franchise') && $createdByEditAccess->id==null) {
+                if(($role=='admin' || $role=='franchise') && isset($createdByEditAccess->id)) {
                     $adminId  = User::where('id',$purchaseOrder->user_id)->first();
 
                     if($adminId->admin_id==auth()->user()->id)
