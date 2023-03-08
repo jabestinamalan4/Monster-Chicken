@@ -388,7 +388,7 @@ class UserManagementController extends Controller
 
         $query = $query->whereNotNull('name');
 
-        $totalCount = $query->count();
+      //  $totalCount = $query->count();
 
         $query = $query->where('status',1);
 
@@ -396,7 +396,7 @@ class UserManagementController extends Controller
 
 
         $usersArray = [];
-
+        $totalCount = 0;
         foreach($users as $user){
             $userList   = [];
             $rolesList  = [];
@@ -407,6 +407,7 @@ class UserManagementController extends Controller
 
             if(isset($inputData->purchaseOrderList) && $inputData->purchaseOrderList==true){
                 if($user->admin_id == auth()->user()->id){
+                    $totalCount         = $totalCount+1;
                     $userList['id']     = $this->encryptId($user->id);
                     $userList['name']   = $user->name;
                     $userList['email']  = $user->email;
@@ -426,6 +427,7 @@ class UserManagementController extends Controller
             else{
                 if($role=='cuttingCenter' || $role=='retailer')
                 {
+                    $totalCount         = $totalCount+1;
                     $userList['id']     = $this->encryptId($user->id);
                     $userList['name']   = $user->name;
                     $userList['email']  = $user->email;
@@ -713,12 +715,12 @@ class UserManagementController extends Controller
 
         $query = $query->where('id', '!=', 1);
 
-        $userCount = $query->count();
+        //$userCount = $query->count();
 
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $userArray  = [];
-
+        $userCount  =  0;
         foreach($users as $user) {
             $userList   = [];
             $rolesList  = [];
@@ -730,6 +732,7 @@ class UserManagementController extends Controller
 
             if(isset($role) && $role=='customer')
             {
+                $userCount          = $userCount+1;
                 $userList['id']     = $this->encryptId($user->id);
                 $userList['name']   = $user->name;
                 $userList['email']  = $user->email;
