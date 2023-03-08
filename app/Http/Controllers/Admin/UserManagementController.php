@@ -6,6 +6,7 @@ use Crypt;
 use App\Models\User;
 use App\Models\State;
 use App\Models\Branch;
+use App\Models\CustomerDetail;
 use App\Jobs\SendEmailJob;
 use Illuminate\Http\Request;
 use App\Http\Traits\HelperTrait;
@@ -260,61 +261,65 @@ class UserManagementController extends Controller
             $admin = User::where('id',$user->admin_id)->first();
 
             $rolesName = $user->getRoleNames()->toArray();
+            $role      = implode(" ",$rolesName);
 
-            if(isset($admin->id)) {
-                $adminList  = [];
-
-                $adminList['name'] = $admin->name;
-                $adminList['email'] = $admin->email;
-
-            }
-
-            $userList['id']     = $this->encryptId($user->id);
-            $userList['name']   = $user->name;
-            $userList['email']  = $user->email;
-            $userList['number'] = $user->number;
-            $userList['status'] = $user->status;
-
-            $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
-            $rolesList['value'] = implode(" ",$rolesName);
-
-            array_push($rolesArray,$rolesList);
-
-            $userList['role']   = $rolesArray;
-
-            foreach($rolesName as $role)
+            if($role!='customer')
             {
-                $stateArray = [];
-                $stateList  = [];
+                if(isset($admin->id)) {
+                    $adminList  = [];
 
-                if($role=="cuttingCenter" || $role=="retailer") {
+                    $adminList['name'] = $admin->name;
+                    $adminList['email'] = $admin->email;
 
-                    $branch = Branch::where('user_id',$user->id)->first();
-
-                    if(isset($branch->state)) {
-
-                        $stateName = State::where('id',$branch->state)->first();
-
-                        $stateList['id']   = $stateName->id;
-                        $stateList['name'] = $stateName->state;
-                    }
-
-                    $branchList['address1'] = isset($branch->address_line_1) ? $branch->address_line_1 : "";
-                    $branchList['address2'] = isset($branch->address_line_2) ? $branch->address_line_2 : "";
-                    $branchList['pinCode']  = isset($branch->pin_code) ? $branch->pin_code : "";
-                    $branchList['district'] = isset($branch->district) ? $branch->district : "";
-                    $branchList['state']    = isset($branch->state) ? (object)$stateList : "";
-                    $branchList['number']   = isset($branch->number) ? $branch->number : "";
-                    $branchList['latitude'] = isset($branch->latitude) ? $branch->latitude : "";
-                    $branchList['longitude']= isset($branch->longitude) ? $branch->longitude : "";
-                    $branchList['staffs']   = isset($branch->staffs) ? $branch->staffs : "";
                 }
+
+                $userList['id']     = $this->encryptId($user->id);
+                $userList['name']   = $user->name;
+                $userList['email']  = $user->email;
+                $userList['number'] = $user->number;
+                $userList['status'] = $user->status;
+
+                $rolesList['key']   = ucfirst(ucwords(implode(' ',preg_split('/(?=[A-Z])/',implode(" ",$rolesName)))));
+                $rolesList['value'] = implode(" ",$rolesName);
+
+                array_push($rolesArray,$rolesList);
+
+                $userList['role']   = $rolesArray;
+
+                foreach($rolesName as $role)
+                {
+                    $stateArray = [];
+                    $stateList  = [];
+
+                    if($role=="cuttingCenter" || $role=="retailer") {
+
+                        $branch = Branch::where('user_id',$user->id)->first();
+
+                        if(isset($branch->state)) {
+
+                            $stateName = State::where('id',$branch->state)->first();
+
+                            $stateList['id']   = $stateName->id;
+                            $stateList['name'] = $stateName->state;
+                        }
+
+                        $branchList['address1'] = isset($branch->address_line_1) ? $branch->address_line_1 : "";
+                        $branchList['address2'] = isset($branch->address_line_2) ? $branch->address_line_2 : "";
+                        $branchList['pinCode']  = isset($branch->pin_code) ? $branch->pin_code : "";
+                        $branchList['district'] = isset($branch->district) ? $branch->district : "";
+                        $branchList['state']    = isset($branch->state) ? (object)$stateList : "";
+                        $branchList['number']   = isset($branch->number) ? $branch->number : "";
+                        $branchList['latitude'] = isset($branch->latitude) ? $branch->latitude : "";
+                        $branchList['longitude']= isset($branch->longitude) ? $branch->longitude : "";
+                        $branchList['staffs']   = isset($branch->staffs) ? $branch->staffs : "";
+                    }
+                }
+
+                $userList['branch'] = (object)$branchList;
+                $userList['admin']  = (object)$adminList;
+
+                array_push($userArray,(object) $userList);
             }
-
-            $userList['branch'] = (object)$branchList;
-            $userList['admin']  = (object)$adminList;
-
-            array_push($userArray,(object) $userList);
         }
 
         $response['status'] = true;
@@ -715,8 +720,6 @@ class UserManagementController extends Controller
 
         $query = $query->where('id', '!=', 1);
 
-        //$userCount = $query->count();
-
         $users = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
         $userArray  = [];
@@ -725,6 +728,7 @@ class UserManagementController extends Controller
             $userList   = [];
             $rolesList  = [];
             $rolesArray = [];
+            $customerDetailList =  [];
 
             $rolesName = $user->getRoleNames()->toArray();
 
@@ -745,6 +749,21 @@ class UserManagementController extends Controller
                 array_push($rolesArray,$rolesList);
 
                 $userList['role']   = $rolesArray;
+
+                $customerDetails = CustomerDetail::where('user_id',$user->id)->orderBy('id','DESC')->first();
+
+                if(isset($customerDetails->id))
+                {
+                    $state = State::where('id',$customerDetails->state)->first();
+                }
+
+                if(isset($customerDetails->id))
+                {
+                    $customerDetailList['name']     = $customerDetails->first_name.' '.$customerDetails->last_name;
+                    $customerDetailList['address']  = $customerDetails->address.','.$customerDetails->city.','.$state->state.'-'.$customerDetails->pin;
+                }
+
+                $userList['customerDetail']= (object)$customerDetailList;
 
                 array_push($userArray,(object) $userList);
             }
