@@ -434,7 +434,7 @@ class PurchaseOrderController extends Controller
                     }
                 }
 
-                    if((isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1) && $purchaseOrder->status<=1)  {
+                    if((isset($createdByEditAccess->id) || isset($createdAtEditAccess->id) || $adminEditAccess==1) && $purchaseOrder->status<1)  {
                         $editAble = true;
                     }
                     else{
@@ -559,7 +559,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItems->save();
             }
 
-            $validCheckAllOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->where('status',1)->get();
+            $validCheckAllOrderItems = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->where('status',1)->first();
 
             if(!isset($validCheckAllOrderItems->id))
             {
