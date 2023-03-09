@@ -98,6 +98,11 @@ class UserController extends Controller
                     $productDetail['cartQuantity'] = 0;
                 }
             }
+            else{
+                $response = ['status' => false, "message"=> ["Invalid user."], "responseCode" => 422];
+                $encryptedResponse['data'] = $this->encryptData($response);
+                return response($encryptedResponse, 400);
+            }
 
             $wishlistExist = Wishlist::where('product_id',$product->id)->where('user_id',$inputUser->id)->where('status',1)->first();
 
