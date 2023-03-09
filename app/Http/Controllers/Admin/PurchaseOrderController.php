@@ -98,6 +98,7 @@ class PurchaseOrderController extends Controller
                     $productDetail['id']       = $isExist->id;
                     $productDetail['quantity'] = $product->quantity;
                     $productDetail['note']     = $product->note;
+                    $productDetail['status']   = $product->status;
 
                     array_push($productArray,(object) $isExist->id);
 
@@ -169,14 +170,18 @@ class PurchaseOrderController extends Controller
                 $itemData = new PurchaseOrderItem;
 
             }
-            $itemData->purchase_order_id = $purchaseOrder->id;
-            $itemData->product_id        = $item->id;
-            $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
-            $itemData->status            = 1;
-            $itemData->note              = $item->note;
-            $itemData->quantity          = $item->quantity;
 
-            $itemData->save();
+            if($item->status==1)
+            {
+                $itemData->purchase_order_id = $purchaseOrder->id;
+                $itemData->product_id        = $item->id;
+                $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
+                $itemData->status            = 1;
+                $itemData->note              = $item->note;
+                $itemData->quantity          = $item->quantity;
+
+                $itemData->save();
+            }
         }
 
         $response['status'] = true;
