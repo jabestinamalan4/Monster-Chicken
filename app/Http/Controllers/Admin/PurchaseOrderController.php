@@ -66,7 +66,7 @@ class PurchaseOrderController extends Controller
 
         if(isset($inputData->userId)) {
 
-            $user = User::where('id',$this->decryptId($inputData->userId))->where('status',1)->first();
+            $user = User::where('id',$this->decryptId($inputData->userId))->whereIn('status',[1,2])->first();
 
             if(!isset($user->id)) {
                 $response = ['status' => false, "message"=> ['Invalid User Id.'], "responseCode" => 422];
@@ -170,18 +170,20 @@ class PurchaseOrderController extends Controller
                 $itemData = new PurchaseOrderItem;
 
             }
-
-            if($item->status==1)
-            {
                 $itemData->purchase_order_id = $purchaseOrder->id;
                 $itemData->product_id        = $item->id;
                 $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
-                $itemData->status            = 1;
+                if(isset($orderItem) && $orderItem==2)
+                {
+                    $itemData->status            = 2;
+                }
+                else{
+                    $itemData->status            = 1;
+                }
                 $itemData->note              = $item->note;
                 $itemData->quantity          = $item->quantity;
 
                 $itemData->save();
-            }
         }
 
         $response['status'] = true;
