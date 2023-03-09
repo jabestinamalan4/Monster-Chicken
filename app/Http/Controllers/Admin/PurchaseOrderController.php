@@ -40,7 +40,7 @@ class PurchaseOrderController extends Controller
         $rolesName = auth()->user()->getRoleNames()->toArray();
         $role      = implode(" ",$rolesName);
 
-        if($role!='cuttingCenter' && $role!='retailer')
+        if(($role!='cuttingCenter' && $role!='retailer') && (!isset($inputData->purchaseOrderId)))
         {
             $rulesArray['userId'] = 'required';
         }
@@ -74,6 +74,11 @@ class PurchaseOrderController extends Controller
                 return response($encryptedResponse, 400);
             }
         }
+        if(isset($inputData->purchaseOrderId)) {
+            $purchaseOrderItemsDelete = PurchaseOrderItem::where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))
+                                        ->where('status',1)->delete();
+        }
+
 
         $productArray = [];
         $orderData = [];
@@ -90,8 +95,9 @@ class PurchaseOrderController extends Controller
                 if(isset($isExist->id)){
                     $productDetail = [];
 
-                    $productDetail['id'] = $isExist->id;
+                    $productDetail['id']       = $isExist->id;
                     $productDetail['quantity'] = $product->quantity;
+                    $productDetail['note']     = $product->note;
 
                     array_push($productArray,(object) $isExist->id);
 
@@ -110,8 +116,8 @@ class PurchaseOrderController extends Controller
             }
         }
 
-        if(isset($inputData->purchaseId) && $inputData->purchaseId != null && $inputData->purchaseId != ""){
-            $isExistPurchase = PurchaseOrder::where('id',$inputData->purchaseId)->where('user_id',auth()->user()->id)->where('status',0)->first();
+        if(isset($inputData->purchaseOrderId) && $inputData->purchaseOrderId != null && $inputData->purchaseOrderId != ""){
+            $isExistPurchase = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('status',0)->first();
 
             if(isset($isExistPurchase->id)){
                 $purchaseOrder = $isExistPurchase;
@@ -121,10 +127,25 @@ class PurchaseOrderController extends Controller
                 $encryptedResponse['data'] = $this->encryptData($response);
                 return response($encryptedResponse, 400);
             }
+
+            $createdUser      = User::where('id',$isExistPurchase->created_by)->where('status',1)->first();
+
+            $createdRolesName = $createdUser->getRoleNames()->toArray();
+            $createdRole      = implode(" ",$createdRolesName);
+
+            if(($role!='cuttingCenter' && $role!='retailer') && ($createdRole!='cuttingCenter' && $createdRole!='retailer'))
+            {
+                $purchaseOrder->user_id      = $this->decryptId($inputData->userId);
+            }
+            else{
+                $purchaseOrder->user_id      = auth()->user()->id;
+            }
+            $purchaseOrder->status       = 0;
         }
         else{
             $purchaseOrder = new PurchaseOrder;
-            if($role=='cuttingCenter' || $role=='retailer') {
+
+            if(($role=='cuttingCenter' || $role=='retailer') && (!isset($inputData->userId))) {
                 $purchaseOrder->user_id      = auth()->user()->id;
             }
             else{
@@ -138,10 +159,6 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->note      = isset($inputData->note) ? $inputData->note : $purchaseOrder->note;
         $purchaseOrder->save();
 
-        if(isset($inputData->purchaseId) && $inputData->purchaseId != null && $inputData->purchaseId != ""){
-            $missedItems = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->whereNotIn('product_id',$productArray)->get();
-        }
-
         foreach($orderData as $item){
             $orderItem = PurchaseOrderItem::where('purchase_order_id',$purchaseOrder->id)->where('product_id',$item->id)->first();
 
@@ -151,22 +168,15 @@ class PurchaseOrderController extends Controller
             else{
                 $itemData = new PurchaseOrderItem;
 
-                $itemData->purchase_order_id = $purchaseOrder->id;
-                $itemData->product_id        = $item->id;
-                $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
-                $itemData->status            = 1;
             }
-
-            $itemData->quantity = $item->quantity;
+            $itemData->purchase_order_id = $purchaseOrder->id;
+            $itemData->product_id        = $item->id;
+            $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
+            $itemData->status            = 1;
+            $itemData->note              = $item->note;
+            $itemData->quantity          = $item->quantity;
 
             $itemData->save();
-        }
-
-        if(isset($missedItems) && count($missedItems) != 0){
-
-            foreach($missedItems as $delete){
-                $delete->delete();
-            }
         }
 
         $response['status'] = true;
@@ -374,6 +384,7 @@ class PurchaseOrderController extends Controller
                 $purchaseOrderItemList['supplier']  = (object) $supplierList;
                 $purchaseOrderItemList['quantity']  = $purchaseOrderItem->quantity;
                 $purchaseOrderItemList['status']    = $purchaseOrderItem->status;
+                $purchaseOrderItemList['note']      = $purchaseOrderItem->note;
                 $purchaseOrderItemList['statusName']= isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
                 $purchaseOrderItemList['createdAt'] = date("Y-m-d", strtotime($purchaseOrderItem->created_at));
 
@@ -485,7 +496,7 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('status',0)->first();
+        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->whereIn('status',[0,1])->first();
 
         if (!isset($purchaseOrder->id)) {
             $response = ['status' => false, "message"=> ['Invalid Purchase Order Id.'], "responseCode" => 422];
@@ -540,7 +551,7 @@ class PurchaseOrderController extends Controller
 
                 if(isset($inputData->purchaseOrderItemsId))
                 {
-                    $purchaseOrderItems = PurchaseOrderItem::where('id',$this->decryptId($inputData->purchaseOrderItemsId))->where('product_id',$this->decryptId($product))
+                    $purchaseOrderItems = PurchaseOrderItem::where('id',$isExistPurchaseOrderItems->id)->where('product_id',$this->decryptId($product))
                                         ->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->whereIn('status',[1,2])->first();
 
                     if(!isset($purchaseOrderItems->id)) {
@@ -551,7 +562,8 @@ class PurchaseOrderController extends Controller
                 }
 
                 else {
-                    $purchaseOrderItems = PurchaseOrderItem::where('product_id',$this->decryptId($product))->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->first();
+                    $purchaseOrderItems = PurchaseOrderItem::where('product_id',$this->decryptId($product))
+                                        ->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->whereIn('status',[1,2])->first();
                 }
 
                 $purchaseOrderItems->supplier_id = $this->decryptId($inputData->supplierId);
