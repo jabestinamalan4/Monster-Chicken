@@ -382,14 +382,15 @@ class PurchaseOrderController extends Controller
                     }
                 }
 
-                $purchaseOrderItemList['id']        = $this->encryptId($purchaseOrderItem->id);
-                $purchaseOrderItemList['product']   = (object) $productList;
-                $purchaseOrderItemList['supplier']  = (object) $supplierList;
-                $purchaseOrderItemList['quantity']  = $purchaseOrderItem->quantity;
-                $purchaseOrderItemList['status']    = $purchaseOrderItem->status;
-                $purchaseOrderItemList['note']      = $purchaseOrderItem->note;
-                $purchaseOrderItemList['statusName']= isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
-                $purchaseOrderItemList['createdAt'] = date("Y-m-d", strtotime($purchaseOrderItem->created_at));
+                $purchaseOrderItemList['id']            = $this->encryptId($purchaseOrderItem->id);
+                $purchaseOrderItemList['product']       = (object) $productList;
+                $purchaseOrderItemList['supplier']      = (object) $supplierList;
+                $purchaseOrderItemList['quantity']      = $purchaseOrderItem->quantity;
+                $purchaseOrderItemList['status']        = $purchaseOrderItem->status;
+                $purchaseOrderItemList['note']          = $purchaseOrderItem->note;
+                $purchaseOrderItemList['changeQuantity']= $purchaseOrderItem->change_quantity;
+                $purchaseOrderItemList['statusName']    = isset($purchaseOrderItemsStatus->id) ? $purchaseOrderItemsStatus->name : "";
+                $purchaseOrderItemList['createdAt']     = date("Y-m-d", strtotime($purchaseOrderItem->created_at));
 
                 array_push($purchaseOrderItemArray,(object) $purchaseOrderItemList);
             }
@@ -672,7 +673,7 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->first();
+        $purchaseOrder = PurchaseOrder::where('id',$this->decryptId($inputData->purchaseOrderId))->where('status',2)->first();
 
         if(!isset($purchaseOrder->id)) {
             $response = ['status' => false, "message"=> ['Invalid PurchaseOrder Id.'], "responseCode" => 422];
@@ -680,7 +681,7 @@ class PurchaseOrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        if($purchaseOrder->status==2)
+        if(isset($purchaseOrder->id))
         {
             foreach($inputData->productId as $product)
             {
@@ -694,8 +695,9 @@ class PurchaseOrderController extends Controller
                     return response($encryptedResponse, 400);
                 }
 
-                if($purchaseOrderItem->status!=3)
+                if($purchaseOrderItem->status<3)
                 {
+                    dd($purchaseOrderItem->status);
                     $response = ['status' => false, "message"=> ['Cannot change to purchase order Items status'], "responseCode" => 422];
                     $encryptedResponse['data'] = $this->encryptData($response);
                     return response($encryptedResponse, 400);
@@ -737,6 +739,17 @@ class PurchaseOrderController extends Controller
                         $stock->branch_id   = $branch->id;
                         $stock->save();
                     }
+                }
+                elseif($purchaseOrderItem->status==4)
+                {
+                    $purchaseOrderItem->status = 4;
+                    $purchaseOrderItem->save();
+                }
+                elseif($purchaseOrderItem->status==5)
+                {
+                    $purchaseOrderItem->change_quantity = $purchaseOrderItem->change_quantity;
+                    $purchaseOrderItem->status = 5;
+                    $purchaseOrderItem->save();
                 }
                 else{
                     $response = ['status' => false, "message"=> ['Cannot change to purchase order Items status'], "responseCode" => 422];
