@@ -98,7 +98,6 @@ class PurchaseOrderController extends Controller
                     $productDetail['id']       = $isExist->id;
                     $productDetail['quantity'] = $product->quantity;
                     $productDetail['note']     = $product->note;
-                    $productDetail['status']   = $product->status;
 
                     array_push($productArray,(object) $isExist->id);
 
@@ -134,19 +133,16 @@ class PurchaseOrderController extends Controller
             $createdRolesName = $createdUser->getRoleNames()->toArray();
             $createdRole      = implode(" ",$createdRolesName);
 
-            if(($role!='cuttingCenter' && $role!='retailer') && ($createdRole!='cuttingCenter' && $createdRole!='retailer'))
+            if(($createdRole!='cuttingCenter' && $createdRole!='retailer'))
             {
                 $purchaseOrder->user_id      = $this->decryptId($inputData->userId);
-            }
-            else{
-                $purchaseOrder->user_id      = auth()->user()->id;
             }
             $purchaseOrder->status       = 0;
         }
         else{
             $purchaseOrder = new PurchaseOrder;
 
-            if(($role=='cuttingCenter' || $role=='retailer') && (!isset($inputData->userId))) {
+            if(($role=='cuttingCenter' || $role=='retailer')) {
                 $purchaseOrder->user_id      = auth()->user()->id;
             }
             else{
@@ -173,7 +169,7 @@ class PurchaseOrderController extends Controller
                 $itemData->purchase_order_id = $purchaseOrder->id;
                 $itemData->product_id        = $item->id;
                 $itemData->supplier_id       = isset($inputData->supplierId) ? $this->decryptId($inputData->supplierId) : null;
-                if(isset($orderItem) && $orderItem==2)
+                if(isset($orderItem) && $orderItem->status==2)
                 {
                     $itemData->status            = 2;
                 }
@@ -583,6 +579,10 @@ class PurchaseOrderController extends Controller
             if(!isset($validCheckAllOrderItems->id))
             {
                 $purchaseOrder->status  = 1;
+                $purchaseOrder->save();
+            }
+            else{
+                $purchaseOrder->status  = 0;
                 $purchaseOrder->save();
             }
 
