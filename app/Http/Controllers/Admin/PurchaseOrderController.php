@@ -66,7 +66,7 @@ class PurchaseOrderController extends Controller
 
         if(isset($inputData->userId)) {
 
-            $user = User::where('id',$this->decryptId($inputData->userId))->whereIn('status',[1,2])->first();
+            $user = User::where('id',$this->decryptId($inputData->userId))->where('status',1)->first();
 
             if(!isset($user->id)) {
                 $response = ['status' => false, "message"=> ['Invalid User Id.'], "responseCode" => 422];
@@ -690,7 +690,7 @@ class PurchaseOrderController extends Controller
 
                 if(!isset($purchaseOrderItem->id))
                 {
-                    $response = ['status' => false, "message"=> ['Invalid Product Id'], "responseCode" => 422];
+                    $response = ['status' => false, "message"=> ['Invalid Product Id'], "responseinputUserCode" => 422];
                     $encryptedResponse['data'] = $this->encryptData($response);
                     return response($encryptedResponse, 400);
                 }

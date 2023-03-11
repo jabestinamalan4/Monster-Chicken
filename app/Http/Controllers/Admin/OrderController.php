@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\OrderDetail;
+use App\Models\OrderStatus;
 use App\Models\ProductCategory;
+use App\Models\OrderDetailsStatus;
 use App\Http\Traits\HelperTrait;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +40,7 @@ class OrderController extends Controller
         }
 
 
-        $orderCount = $query->count();
+        $totalOrder = $query->count();
 
         $orders = $query->orderBy('id','desc')->paginate(isset($inputData->countPerPage) ? $inputData->countPerPage : 20);
 
@@ -56,11 +59,21 @@ class OrderController extends Controller
                 $userList['email'] = $user->email;
             }
 
+            $orderCount  = OrderDetail::where('order_id',$order->id)->count();
+
+            if(isset($order->status))
+            {
+                $statusName = OrderStatus::where('status',$order->status)->first();
+            }
+
             $orderList['id']            = $this->encryptId($order->id);
             $orderList['orderBy']       = $userList;
             $orderList['orderOn']       = $order->created_at;
             $orderList['totalPrice']    = $order->total_price;
             $orderList['note']          = $order->note;
+            $orderList['status']        = $order->status;
+            $orderList['statusName']    = $statusName->name;
+            $orderList['orderCount']    = $orderCount;
 
             array_push($orderArray,$orderList);
         }
@@ -68,7 +81,7 @@ class OrderController extends Controller
         $response['status'] = true;
         $response["message"] = ['Retrieved Successfully.'];
         $response['response']["orders"] = $orderArray;
-        $response['response']["totalOrder"] = $orderCount;
+        $response['response']["totalOrder"] = $totalOrder;
 
         $encryptedResponse['data'] = $this->encryptData($response);
         return response($encryptedResponse, 200);
@@ -98,6 +111,8 @@ class OrderController extends Controller
 
         $order = Order::where('id',$this->decryptId($inputData->orderId))->first();
 
+        $orderCount  = OrderDetail::where('order_id',$this->decryptId($inputData->orderId))->count();
+
         if (!isset($order->id)) {
             $response = ['status' => false, "message"=> ['Invalid Order Id.'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
@@ -124,6 +139,11 @@ class OrderController extends Controller
 
             foreach($orderDetails as $orderDetail)
             {
+                if(isset($orderDetail->status))
+                {
+                    $orderStatusName = OrderDetailsStatus::where('status',$orderDetail->status)->first();
+                }
+
                 $product = Product::where('id',$orderDetail->product_id)->first();
 
                 if(isset($product->id))
@@ -147,19 +167,29 @@ class OrderController extends Controller
                     $productList['imageUrl']        = $imageArray;
                 }
 
-                $orderDetailsList['id']       = $this->encryptId($orderDetail->id);
-                $orderDetailsList['product']  = $productList;
-                $orderDetailsList['quantity'] = $orderDetail->quantity;
+                $orderDetailsList['id']         = $this->encryptId($orderDetail->id);
+                $orderDetailsList['product']    = $productList;
+                $orderDetailsList['quantity']   = $orderDetail->quantity;
+                $orderDetailsList['status']     = $orderDetail->status;
+                $orderDetailsList['statusName'] = $orderStatusName->name;
+
 
                 array_push($orderDetailsArray,(object) $orderDetailsList);
             }
 
-            $orderList['id']         = $this->encryptId($order->id);
-            $orderList['orderBy']    = $userList;
-            $orderList['orderOn']    = $order->created_at;
-            $orderList['totalPrice'] = $order->total_price;
-            $orderList['note']       = $order->note;
-            $orderList['status']     = $order->status;
+            if(isset($order->status))
+            {
+                $statusName = OrderStatus::where('status',$order->status)->first();
+            }
+
+            $orderList['id']          = $this->encryptId($order->id);
+            $orderList['orderBy']     = $userList;
+            $orderList['orderOn']     = $order->created_at;
+            $orderList['totalPrice']  = $order->total_price;
+            $orderList['note']        = $order->note;
+            $orderList['status']      = $order->status;
+            $orderList['statusName']  = $statusName->name;
+            $orderList['orderCount']  = $orderCount;
             $orderList['OrderDetails']= $orderDetailsArray;
 
         }
@@ -240,7 +270,8 @@ class OrderController extends Controller
         }
 
         $rulesArray = [
-            'userId' => 'required',
+            'productId' => 'required|array',
+            'supplierId' => 'required',
             'orderId' => 'required'
         ];
 
@@ -252,29 +283,138 @@ class OrderController extends Controller
             return response($encryptedResponse, 400);
         }
 
-        $user = User::where('id',$this->decryptId($inputData->userId))->first();
+        $supplier = Supplier::where('id',$this->decryptId($inputData->supplierId))->where('status',1)->first();
 
-        if (!isset($user->id)) {
-            $response = ['status' => false, "message"=> ['Invalid User Id.'], "responseCode" => 422];
+        if (!isset($supplier->id)) {
+            $response = ['status' => false, "message"=> ['Invalid Supplier Id.'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
 
-        $order = Order::where('id',$this->decryptId($inputData->orderId))->where('status',1)->first();
+        $order = Order::where('id',$this->decryptId($inputData->orderId))->whereIn('status',[1,2])->first();
 
         if (!isset($order->id)) {
             $response = ['status' => false, "message"=> ['Invalid Order Id.'], "responseCode" => 422];
             $encryptedResponse['data'] = $this->encryptData($response);
             return response($encryptedResponse, 400);
         }
-        else{
-            $order->delivered_by  = $this->decryptId($inputData->userId);
-            $order->status  = 2;
-            $order->save();
+
+        $orderDetails = OrderDetail::where('order_id',$this->decryptId($inputData->orderId))->first();
+
+        if (!isset($orderDetails->id)) {
+            $response = ['status' => false, "message"=> ['Invalid Order Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        if(isset($inputData->productId))
+        {
+            foreach($inputData->productId as $product) {
+                $isExistProduct = Product::where('id',$this->decryptId($product))->where('status',1)->first();
+
+                if(!isset($isExistProduct->id)) {
+                    $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];
+                    $encryptedResponse['data'] = $this->encryptData($response);
+                    return response($encryptedResponse, 400);
+                }
+
+                $isExistProduct = OrderDetail::where('product_id',$this->decryptId($product))
+                                 ->where('order_id',$this->decryptId($inputData->orderId))->first();
+
+                if(!isset($isExistProduct->id)) {
+                    $response = ['status' => false, "message"=> ['Invalid Product Id.'], "responseCode" => 422];
+                    $encryptedResponse['data'] = $this->encryptData($response);
+                    return response($encryptedResponse, 400);
+                }
+
+                if(isset($inputData->OrderDetailsId))
+                {
+                    $orderDetails = OrderDetail::where('id',$this->decryptId($inputData->OrderDetailsId))->where('product_id',$this->decryptId($product))
+                                        ->where('purchase_order_id',$this->decryptId($inputData->purchaseOrderId))->whereIn('status',[1,2])->first();
+
+                    if(!isset($orderDetails->id)) {
+                        $response = ['status' => false, "message"=> ['Invalid Order Details Id.'], "responseCode" => 422];
+                        $encryptedResponse['data'] = $this->encryptData($response);
+                        return response($encryptedResponse, 400);
+                    }
+                }
+
+                else {
+                    $orderDetails = OrderDetail::where('product_id',$this->decryptId($product))
+                                        ->where('order_id',$this->decryptId($inputData->orderId))->whereIn('status',[1,2])->first();
+                }
+
+                $orderDetails->supplier_id  = $this->decryptId($inputData->supplierId);
+                $orderDetails->status = 2;
+                $orderDetails->save();
+
+                $validCheckAllOrderDetails = OrderDetail::where('order_id',$this->decryptId($inputData->orderId))->where('status',1)->first();
+
+                if(!isset($validCheckAllOrderDetails->id))
+                {
+                    $order->status  = 2;
+                    $order->save();
+                }
+                else{
+                    $order->status  = 1;
+                    $order->save();
+                }
+            }
         }
 
         $response['status'] = true;
         $response["message"] = ['Order Assign Successfully.'];
+        $response['responseCode'] = 200;
+
+        $encryptedResponse['data'] = $this->encryptData($response);
+        return response($encryptedResponse, 200);
+    }
+
+    public function orderDelivery(Request $request)
+    {
+        if (gettype($request->input) == 'array') {
+            $inputData = (object) $request->input;
+        }
+        else{
+            $inputData = $request->input;
+        }
+
+        $rulesArray = [
+            'orderId' => 'required'
+        ];
+
+        $order = Order::where('id',$this->decryptId($inputData->orderId))->where('status',2)->first();
+
+        if (!isset($order->id)) {
+            $response = ['status' => false, "message"=> ['Invalid Order Id.'], "responseCode" => 422];
+            $encryptedResponse['data'] = $this->encryptData($response);
+            return response($encryptedResponse, 400);
+        }
+
+        $orderDetails = OrderDetail::where('id',$this->decryptId($inputData->orderId))->where('status',2)->get();
+
+        if(isset($orderDetails))
+        {
+            foreach($orderDetails as $orderDetail)
+            {
+                $OrderDetailList  = OrderDetail::where('id',$orderDetail->id)->where('status',2)->first();
+
+                if(isset($OrderDetailList->id))
+                {
+                    $OrderDetailList->status = 3;
+                    $OrderDetailList->save();
+                }
+            }
+
+            if(isset($order->id))
+            {
+                $order->status = 3;
+                $order->save();
+            }
+        }
+
+        $response['status'] = true;
+        $response["message"] = ['Updated successfully.'];
         $response['responseCode'] = 200;
 
         $encryptedResponse['data'] = $this->encryptData($response);

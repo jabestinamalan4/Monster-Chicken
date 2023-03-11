@@ -89,9 +89,10 @@ Route::group(['middleware'=>['decrypt']], function(){
     Route::post('feed/get-feeds', [FeedController::class, 'getFeeds'])->middleware(['role:admin','auth:api']);
     Route::post('feed/change-status', [FeedController::class, 'changeStatus'])->middleware(['role:admin','auth:api']);
 
-    Route::post('order/list', [OrderController::class,'orderList']);
-    Route::post('order/view', [OrderController::class,'orderDetails']);
-    Route::post('order/user-list', [OrderController::class,'userList']);
-    Route::post('order/assign', [OrderController::class,'orderAssign']);
+    Route::post('order/list', [OrderController::class,'orderList'])->middleware(['role:admin','auth:api']);
+    Route::post('order/view', [OrderController::class,'orderDetails'])->middleware(['role:admin','auth:api']);
+    Route::post('order/user-list', [OrderController::class,'userList'])->middleware(['role:admin','auth:api']);
+    Route::post('order/assign', [OrderController::class,'orderAssign'])->middleware(['role:admin','auth:api']);
+    Route::post('order/delivery', [OrderController::class,'orderDelivery'])->middleware(['role:admin','auth:api']);
 
 });
